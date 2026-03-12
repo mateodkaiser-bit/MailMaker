@@ -4,16 +4,19 @@ import * as storage from '../lib/storage.js';
 import { getDefaultTheme } from '../lib/constants.js';
 
 export const useTemplateStore = create((set, get) => ({
-  templates: storage.getTemplates(),
+  templates: storage.getTemplates().map(t => ({
+    ...t,
+    name: typeof t.name === 'string' ? t.name : (t.name?.name ?? 'Untitled email'),
+  })),
 
   /** Create a new blank template, persist it, return its id. */
-  createTemplate: (name = 'Untitled email') => {
+  createTemplate: ({ name = 'Untitled email', doc } = {}) => {
     const t = {
       id: nanoid(),
       name,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      doc: { type: 'doc', content: [{ type: 'paragraph' }] },
+      doc: doc ?? { type: 'doc', content: [{ type: 'paragraph' }] },
       theme: getDefaultTheme(),
       variables: [{ name: 'first_name', fallback: 'there' }],
     };
