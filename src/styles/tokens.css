@@ -1,0 +1,66 @@
+:root {
+  /* Color — Neutrals */
+  --color-ink:        #0F1117;
+  --color-ink-light:  #1C2128;
+  --color-slate:      #4B5563;
+  --color-muted:      #9CA3AF;
+  --color-ghost:      #F3F4F6;
+  --color-border:     #E5E7EB;
+  --color-white:      #FFFFFF;
+
+  /* Color — Accent */
+  --color-amber:      #D97706;
+  --color-amber-hover:#F59E0B;
+  --color-amber-light:#FEF3C7;
+  --color-amber-soft: #FFFBEB;
+
+  /* Color — Semantic */
+  --color-success:    #059669;
+  --color-success-bg: #ECFDF5;
+  --color-info:       #2563EB;
+  --color-info-bg:    #EFF6FF;
+  --color-danger:     #DC2626;
+  --color-danger-bg:  #FEF2F2;
+
+  /* Typography */
+  --font-sans:        'Inter', -apple-system, sans-serif;
+  --font-mono:        'JetBrains Mono', 'Fira Code', monospace;
+
+  --text-xs:    11px;
+  --text-sm:    13px;
+  --text-base:  14px;
+  --text-md:    16px;
+  --text-lg:    18px;
+  --text-xl:    24px;
+  --text-2xl:   32px;
+
+  /* Spacing (4px base unit) */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-16: 64px;
+
+  /* Radii */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+
+  /* Preview */
+  --color-preview-bg: #888888;
+
+  /* Shadows */
+  --shadow-sm:     0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md:     0 4px 16px rgba(0,0,0,0.10);
+  --shadow-canvas: 0 2px 12px rgba(0,0,0,0.07);
+
+  /* Layout */
+  --nav-width:   240px;
+  --panel-width: 320px;
+  --canvas-max:  680px;
+}
