@@ -33,29 +33,34 @@ export const SlashCommand = Extension.create({
                 '\ufffc'
               );
               const slashMatch = textBefore.match(/\/(\w*)$/);
+              const pluginState = SLASH_MENU_KEY.getState(state);
 
               if (slashMatch) {
                 const query = slashMatch[1];
                 const from = selection.from - slashMatch[0].length;
                 const to = selection.from;
-                view.dispatch(
-                  view.state.tr.setMeta(SLASH_MENU_KEY, {
-                    active: true,
-                    query,
-                    range: { from, to },
-                  })
-                );
-              } else {
-                const pluginState = SLASH_MENU_KEY.getState(state);
-                if (pluginState?.active) {
+                // Only dispatch when state actually changed to avoid infinite loop
+                if (
+                  !pluginState?.active ||
+                  pluginState.query !== query ||
+                  pluginState.range?.from !== from
+                ) {
                   view.dispatch(
                     view.state.tr.setMeta(SLASH_MENU_KEY, {
-                      active: false,
-                      query: '',
-                      range: null,
+                      active: true,
+                      query,
+                      range: { from, to },
                     })
                   );
                 }
+              } else if (pluginState?.active) {
+                view.dispatch(
+                  view.state.tr.setMeta(SLASH_MENU_KEY, {
+                    active: false,
+                    query: '',
+                    range: null,
+                  })
+                );
               }
             },
           };
