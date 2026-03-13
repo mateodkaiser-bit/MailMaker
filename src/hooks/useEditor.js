@@ -12,7 +12,7 @@ import { BlockImage } from '../extensions/BlockImage.js';
 import { BlockButton } from '../extensions/BlockButton.js';
 import { BlockDivider } from '../extensions/BlockDivider.js';
 import { BlockSpacer } from '../extensions/BlockSpacer.js';
-import { BlockColumns } from '../extensions/BlockColumns.js';
+import { BlockColumns, BlockColumn } from '../extensions/BlockColumns.js';
 import { BlockSocialIcons } from '../extensions/BlockSocialIcons.js';
 import { BlockSharedInstance } from '../extensions/BlockSharedInstance.js';
 import { SlashCommand } from '../extensions/SlashCommand.js';
@@ -34,6 +34,7 @@ export function useEditor({ content, onUpdate, placeholder = 'Type / to insert a
       BlockDivider,
       BlockSpacer,
       BlockColumns,
+      BlockColumn,
       BlockSocialIcons,
       BlockSharedInstance,
       SlashCommand,

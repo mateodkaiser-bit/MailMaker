@@ -2,12 +2,11 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useClipboard } from '../../hooks/useClipboard.js';
 
-export default function EditorTopBar({ template, onRename, mjml, html, onPreviewToggle, previewOpen }) {
+export default function EditorTopBar({ template, onRename, html, isCompiling, hasError, onPreviewToggle, previewOpen }) {
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(template?.name ?? '');
   const { copied: copiedHtml, copy: copyHtml } = useClipboard();
-  const { copied: copiedMjml, copy: copyMjml } = useClipboard();
   const [exportOpen, setExportOpen] = useState(false);
 
   function commitRename() {
@@ -122,20 +121,29 @@ export default function EditorTopBar({ template, onRename, mjml, html, onPreview
             overflow: 'hidden',
           }}>
             {[
-              { label: copiedHtml ? '✓ Copied HTML' : 'Copy HTML', action: () => { copyHtml(html); } },
-              { label: copiedMjml ? '✓ Copied MJML' : 'Copy MJML', action: () => { copyMjml(mjml); } },
+              {
+                label: copiedHtml ? '✓ Copied HTML' : (hasError && html ? '⚠ Copy HTML' : 'Copy HTML'),
+                action: () => { copyHtml(html); },
+                disabled: isCompiling || !html,
+                title: isCompiling ? 'Compiling…' : (hasError ? 'Showing last valid output — email has errors' : undefined),
+              },
               { label: '⬇ Download .html', action: downloadHtml },
-            ].map(({ label, action }) => (
+            ].map(({ label, action, disabled, title }) => (
               <button
                 key={label}
-                onClick={() => { action(); setExportOpen(false); }}
+                onClick={() => { if (!disabled) { action(); setExportOpen(false); } }}
+                disabled={disabled}
+                title={title}
                 style={{
                   display: 'block', width: '100%', textAlign: 'left',
                   padding: '10px 16px',
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  fontSize: 'var(--text-sm)', color: 'var(--color-ink)',
+                  background: 'none', border: 'none',
+                  cursor: disabled ? 'default' : 'pointer',
+                  fontSize: 'var(--text-sm)',
+                  color: disabled ? 'var(--color-muted)' : 'var(--color-ink)',
+                  opacity: disabled ? 0.6 : 1,
                 }}
-                onMouseEnter={e => e.currentTarget.style.background = 'var(--color-ghost)'}
+                onMouseEnter={e => { if (!disabled) e.currentTarget.style.background = 'var(--color-ghost)'; }}
                 onMouseLeave={e => e.currentTarget.style.background = 'none'}
               >
                 {label}

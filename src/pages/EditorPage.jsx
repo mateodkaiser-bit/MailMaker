@@ -34,9 +34,8 @@ export default function EditorPage() {
     }, [id, updateTemplate]),
   });
 
-  const { html, mjml, error } = useCompiler(doc, theme, !previewOpen ? false : true);
-  // Also compile in background for export even without preview
-  const { html: exportHtml, mjml: exportMjml } = useCompiler(doc, theme, true);
+  // Single always-on compiler — provides html for export AND preview
+  const { html, error, isCompiling } = useCompiler(doc, theme, true);
 
   function handleThemeChange(patch) {
     const next = { ...theme, ...patch };
@@ -55,8 +54,9 @@ export default function EditorPage() {
       <EditorTopBar
         template={template}
         onRename={handleRename}
-        html={exportHtml}
-        mjml={exportMjml}
+        html={html}
+        isCompiling={isCompiling}
+        hasError={!!error}
         previewOpen={previewOpen}
         onPreviewToggle={() => setPreviewOpen(o => !o)}
       />
@@ -65,7 +65,12 @@ export default function EditorPage() {
         {/* Canvas */}
         <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           {previewOpen ? (
-            <PreviewPane html={exportHtml} error={error} />
+            <PreviewPane
+              html={html}
+              error={error}
+              variables={template?.variables ?? []}
+              globalVariables={settings?.variables ?? []}
+            />
           ) : (
             <EditorCanvas editor={editor} theme={theme} />
           )}
