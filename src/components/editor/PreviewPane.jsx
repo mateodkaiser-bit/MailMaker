@@ -39,12 +39,14 @@ export default function PreviewPane({ html, error }) {
     }}>
       {/* ── Toolbar ── */}
       <div style={{
-        display: 'flex', alignItems: 'center', gap: 6,
-        padding: '8px 16px',
-        background: 'var(--color-ink)',
+        height: 'var(--topbar-height)',
+        display: 'flex', alignItems: 'center', gap: 8,
+        padding: '0 16px',
+        background: 'var(--color-white)',
+        borderBottom: '1px solid var(--color-border)',
         flexShrink: 0,
       }}>
-        <span style={{ color: 'var(--color-muted)', fontSize: 'var(--text-xs)', fontWeight: 600 }}>
+        <span style={{ color: 'var(--color-muted)', fontSize: 'var(--text-xs)', fontWeight: 600, letterSpacing: '0.06em' }}>
           PREVIEW
         </span>
 
@@ -53,9 +55,10 @@ export default function PreviewPane({ html, error }) {
         {/* Device toggle */}
         <div style={{
           display: 'flex',
-          background: 'rgba(255,255,255,0.08)',
-          borderRadius: 'var(--radius-sm)',
-          padding: 2, gap: 2,
+          background: 'var(--color-ghost)',
+          border: '1px solid var(--color-border)',
+          borderRadius: 'var(--radius-md)',
+          padding: 3, gap: 2,
         }}>
           {deviceButtons.map(({ id, icon, label }) => (
             <button
@@ -63,17 +66,19 @@ export default function PreviewPane({ html, error }) {
               onClick={() => setDevice(id)}
               title={label}
               style={{
-                padding: '4px 10px',
-                background: device === id ? 'rgba(255,255,255,0.18)' : 'none',
-                color: 'var(--color-white)',
+                padding: '4px 12px',
+                background: device === id ? 'var(--color-white)' : 'none',
+                boxShadow: device === id ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                color: device === id ? 'var(--color-ink)' : 'var(--color-muted)',
                 border: 'none', borderRadius: 'var(--radius-sm)',
                 cursor: 'pointer',
                 display: 'flex', alignItems: 'center', gap: 5,
-                transition: 'background 0.12s',
+                transition: 'all 0.12s',
+                fontWeight: device === id ? 600 : 400,
               }}
             >
-              <Icon name={icon} size={15} style={{ color: 'inherit' }} />
-              <span style={{ fontSize: 'var(--text-xs)', fontWeight: 600 }}>{label}</span>
+              <Icon name={icon} size={14} style={{ color: 'inherit' }} />
+              <span style={{ fontSize: 'var(--text-xs)' }}>{label}</span>
             </button>
           ))}
         </div>

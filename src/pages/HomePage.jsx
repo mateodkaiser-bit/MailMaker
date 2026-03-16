@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { nanoid } from 'nanoid';
 import { useTemplateStore } from '../store/templates.js';
 import TemplateGrid from '../components/home/TemplateGrid.jsx';
+import NavRail from '../components/ui/NavRail.jsx';
 import Modal from '../components/ui/Modal.jsx';
+import Icon from '../components/ui/Icon.jsx';
 import { STARTER_TEMPLATES } from '../lib/constants.js';
 
 export default function HomePage() {
@@ -22,79 +23,114 @@ export default function HomePage() {
   }
 
   function handlePickStarter(starter) {
-    const id = createTemplate({
-      name: starter.name,
-      doc: starter.doc,
-    });
+    const id = createTemplate({ name: starter.name, doc: starter.doc });
     setStarterOpen(false);
     navigate(`/editor/${id}`);
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* Top bar */}
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '16px 24px',
-        borderBottom: '1px solid var(--color-border)',
-        background: 'var(--color-white)',
-        flexShrink: 0,
-      }}>
-        <h1 style={{ margin: 0, fontSize: 'var(--text-lg)', fontWeight: 700 }}>Templates</h1>
+    <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
+      <NavRail />
 
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <input
-            type="search"
-            placeholder="Search…"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            style={{
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-md)',
-              padding: '7px 12px',
-              fontSize: 'var(--text-sm)',
-              width: 200,
-              outline: 'none',
-              background: 'var(--color-ghost)',
-            }}
-          />
-          <button
-            onClick={() => setStarterOpen(true)}
-            style={{
-              padding: '8px 16px',
-              background: 'transparent', color: 'var(--color-slate)',
-              border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)',
-              fontWeight: 500, fontSize: 'var(--text-sm)', cursor: 'pointer',
-            }}
-          >
-            Use starter
-          </button>
-          <button
-            onClick={handleCreateBlank}
-            style={{
-              padding: '8px 16px',
-              background: 'var(--color-accent)', color: 'var(--color-white)',
-              border: 'none', borderRadius: 'var(--radius-md)',
-              fontWeight: 600, fontSize: 'var(--text-sm)', cursor: 'pointer',
-              transition: 'background 0.15s',
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = 'var(--color-accent-hover)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'var(--color-accent)'}
-          >
-            + New template
-          </button>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {/* Top bar */}
+        <div style={{
+          height: 'var(--topbar-height)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 20px',
+          borderBottom: '1px solid var(--color-border)',
+          background: 'var(--color-white)',
+          flexShrink: 0,
+          gap: 12,
+        }}>
+          <h1 style={{
+            margin: 0,
+            fontSize: 'var(--text-base)',
+            fontWeight: 600,
+            color: 'var(--color-ink)',
+          }}>
+            Templates
+          </h1>
+
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            {/* Search */}
+            <div style={{ position: 'relative' }}>
+              <Icon
+                name="search"
+                size={15}
+                style={{
+                  position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)',
+                  color: 'var(--color-muted)', pointerEvents: 'none',
+                }}
+              />
+              <input
+                type="search"
+                placeholder="Search templates…"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                style={{
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '6px 12px 6px 30px',
+                  fontSize: 'var(--text-sm)',
+                  width: 200,
+                  outline: 'none',
+                  background: 'var(--color-ghost)',
+                  color: 'var(--color-ink)',
+                }}
+              />
+            </div>
+
+            <button
+              onClick={() => setStarterOpen(true)}
+              style={{
+                padding: '6px 14px',
+                background: 'transparent',
+                color: 'var(--color-slate)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)',
+                fontWeight: 500, fontSize: 'var(--text-sm)', cursor: 'pointer',
+                transition: 'all 0.12s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-ghost)'; e.currentTarget.style.color = 'var(--color-ink)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--color-slate)'; }}
+            >
+              Starter templates
+            </button>
+
+            <button
+              onClick={handleCreateBlank}
+              style={{
+                padding: '6px 14px',
+                background: 'var(--color-ink)',
+                color: 'var(--color-white)',
+                border: 'none',
+                borderRadius: 'var(--radius-md)',
+                fontWeight: 600, fontSize: 'var(--text-sm)', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 6,
+                transition: 'opacity 0.12s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.opacity = '0.82'}
+              onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+            >
+              <Icon name="add" size={16} style={{ color: 'inherit' }} />
+              New template
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* Grid */}
-      <div style={{ flex: 1, overflowY: 'auto', background: 'var(--color-ghost)' }}>
-        <TemplateGrid
-          templates={filtered}
-          onCreateBlank={handleCreateBlank}
-          onCreateFromTemplate={() => setStarterOpen(true)}
-          onDuplicate={duplicateTemplate}
-          onDelete={deleteTemplate}
-        />
+        {/* Content */}
+        <div style={{ flex: 1, overflowY: 'auto', background: 'var(--color-surface)' }}>
+          <TemplateGrid
+            templates={filtered}
+            onCreateBlank={handleCreateBlank}
+            onCreateFromTemplate={() => setStarterOpen(true)}
+            onDuplicate={duplicateTemplate}
+            onDelete={deleteTemplate}
+          />
+        </div>
       </div>
 
       {/* Starter modal */}
@@ -103,26 +139,36 @@ export default function HomePage() {
         onClose={() => setStarterOpen(false)}
         title="Choose a starter template"
       >
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
           {STARTER_TEMPLATES.map(starter => (
             <button
-              key={starter.id}
+              key={starter.name}
               onClick={() => handlePickStarter(starter)}
               style={{
-                background: 'var(--color-ghost)',
-                border: '2px solid var(--color-border)',
+                background: 'var(--color-white)',
+                border: '1.5px solid var(--color-border)',
                 borderRadius: 'var(--radius-lg)',
-                padding: '20px 16px',
+                padding: '18px 16px',
                 cursor: 'pointer',
                 textAlign: 'left',
-                transition: 'border-color 0.15s',
+                transition: 'border-color 0.12s, box-shadow 0.12s',
               }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--color-accent)'}
-              onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--color-border)'}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-ink)'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.boxShadow = 'none'; }}
             >
-              <div style={{ fontSize: 24, marginBottom: 8 }}>{starter.icon}</div>
-              <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)' }}>{starter.name}</div>
-              <div style={{ color: 'var(--color-muted)', fontSize: 'var(--text-xs)', marginTop: 4 }}>
+              <div style={{
+                width: 32, height: 32,
+                background: 'var(--color-ghost)',
+                borderRadius: 'var(--radius-md)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                marginBottom: 10,
+              }}>
+                <Icon name={starter.icon} size={17} style={{ color: 'var(--color-slate)' }} />
+              </div>
+              <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)', color: 'var(--color-ink)' }}>
+                {starter.name}
+              </div>
+              <div style={{ color: 'var(--color-muted)', fontSize: 'var(--text-xs)', marginTop: 3, lineHeight: 1.5 }}>
                 {starter.description}
               </div>
             </button>

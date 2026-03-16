@@ -72,8 +72,8 @@ export const STARTER_PLAIN = {
 };
 
 export const STARTER_TEMPLATES = [
-  { label: 'Newsletter', doc: STARTER_NEWSLETTER },
-  { label: 'Welcome email', doc: STARTER_WELCOME },
-  { label: 'Announcement', doc: STARTER_ANNOUNCEMENT },
-  { label: 'Plain text digest', doc: STARTER_PLAIN },
+  { name: 'Newsletter',        icon: 'newspaper',      description: 'Multi-section digest with heading, body, and CTA',  doc: STARTER_NEWSLETTER   },
+  { name: 'Welcome email',     icon: 'waving_hand',    description: 'Onboarding email for new subscribers or signups',   doc: STARTER_WELCOME      },
+  { name: 'Announcement',      icon: 'campaign',       description: 'Product launch or feature announcement with image', doc: STARTER_ANNOUNCEMENT },
+  { name: 'Plain text digest', icon: 'article',        description: 'Minimal plain-text format for personal outreach',   doc: STARTER_PLAIN        },
 ];
