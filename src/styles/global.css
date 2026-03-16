@@ -77,6 +77,14 @@ body {
   height: 0;
 }
 
+/* ── Dot-grid canvas background ────────────────────────────────────────── */
+
+.dot-grid {
+  background-color: #f9fafb;
+  background-image: radial-gradient(circle, rgba(0,0,0,0.18) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
 /* ── Material Symbols Rounded base ─────────────────────────────────────── */
 
 /* Default variation settings — overridden per-instance via inline style */

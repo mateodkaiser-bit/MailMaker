@@ -33,10 +33,7 @@ export default function PreviewPane({ html, error }) {
   ];
 
   return (
-    <div style={{
-      display: 'flex', flexDirection: 'column',
-      height: '100%', background: 'var(--color-preview-bg)',
-    }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* ── Toolbar ── */}
       <div style={{
         height: 'var(--topbar-height)',
@@ -107,6 +104,7 @@ export default function PreviewPane({ html, error }) {
       {/* ── Preview area ── */}
       <div
         ref={containerRef}
+        className="dot-grid"
         style={{ flex: 1, overflowY: 'auto', display: 'flex', justifyContent: 'center', padding: 24 }}
       >
         {html ? (

@@ -22,10 +22,10 @@ export default function EditorCanvas({ editor, theme }) {
 
   return (
     <div
+      className="dot-grid"
       style={{
         flex: 1,
         overflowY: 'auto',
-        background: 'var(--color-preview-bg)',
         display: 'flex',
         justifyContent: 'center',
         padding: '40px 24px',

@@ -122,7 +122,7 @@ export default function HomePage() {
         </div>
 
         {/* Content */}
-        <div style={{ flex: 1, overflowY: 'auto', background: 'var(--color-surface)' }}>
+        <div className="dot-grid" style={{ flex: 1, overflowY: 'auto' }}>
           <TemplateGrid
             templates={filtered}
             onCreateBlank={handleCreateBlank}
