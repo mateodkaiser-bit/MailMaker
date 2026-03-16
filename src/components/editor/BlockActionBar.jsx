@@ -16,38 +16,6 @@ export default function BlockActionBar({ editor }) {
     editor.chain().focus().deleteSelection().run();
   }
 
-  function moveUp() {
-    editor.chain().focus().run();
-    const { $from } = editor.state.selection;
-    const index = $from.index($from.depth - 1);
-    if (index === 0) return;
-    const parent = $from.node($from.depth - 1);
-    const prevNode = parent.child(index - 1);
-    const tr = editor.state.tr;
-    const nodeStart = $from.before($from.depth);
-    const prevStart = nodeStart - prevNode.nodeSize;
-    tr.replaceWith(prevStart, nodeStart + node.nodeSize, [node, prevNode]);
-    editor.view.dispatch(tr);
-  }
-
-  function moveDown() {
-    const { $from } = editor.state.selection;
-    const index = $from.index($from.depth - 1);
-    const parent = $from.node($from.depth - 1);
-    if (index >= parent.childCount - 1) return;
-    const nextNode = parent.child(index + 1);
-    const tr = editor.state.tr;
-    const nodeStart = $from.before($from.depth);
-    tr.replaceWith(nodeStart, nodeStart + node.nodeSize + nextNode.nodeSize, [nextNode, node]);
-    editor.view.dispatch(tr);
-  }
-
-  const actions = [
-    { icon: 'arrow_upward',   title: 'Move up',     action: moveUp },
-    { icon: 'arrow_downward', title: 'Move down',   action: moveDown },
-    { icon: 'delete',         title: 'Delete block', action: deleteBlock },
-  ];
-
   return (
     <div
       style={{
@@ -61,23 +29,20 @@ export default function BlockActionBar({ editor }) {
         boxShadow: 'var(--shadow-md)',
       }}
     >
-      {actions.map(({ icon, title, action }) => (
-        <button
-          key={title}
-          onMouseDown={e => { e.preventDefault(); action(); }}
-          title={title}
-          style={{
-            background: 'none', border: 'none', cursor: 'pointer',
-            color: 'var(--color-white)', padding: '4px 8px',
-            borderRadius: 'var(--radius-sm)',
-            display: 'flex', alignItems: 'center',
-          }}
-          onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
-          onMouseLeave={e => e.currentTarget.style.background = 'none'}
-        >
-          <Icon name={icon} size={15} style={{ color: 'inherit' }} />
-        </button>
-      ))}
+      <button
+        onMouseDown={e => { e.preventDefault(); deleteBlock(); }}
+        title="Delete block"
+        style={{
+          background: 'none', border: 'none', cursor: 'pointer',
+          color: 'var(--color-white)', padding: '4px 8px',
+          borderRadius: 'var(--radius-sm)',
+          display: 'flex', alignItems: 'center',
+        }}
+        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+        onMouseLeave={e => e.currentTarget.style.background = 'none'}
+      >
+        <Icon name="delete" size={15} style={{ color: 'inherit' }} />
+      </button>
     </div>
   );
 }

@@ -1,21 +1,24 @@
 /**
  * DragHandle — Notion-style six-dot drag handle for every block.
  *
- * Behaviour (mirrors Notion exactly):
+ * Behaviour:
  *  • Hover any block  → grip appears to the left, fades in
  *  • Hover the grip   → subtle gray pill background, darker dots
- *  • Drag the grip    → semi-transparent block ghost follows cursor
+ *  • Click the grip   → select that block (clears multi-select)
+ *  • Shift+click      → add/remove block from multi-selection
+ *  • Drag the grip    → move single block (or all selected blocks if multi-selected)
  *  • Drag over editor → blue 2 px line + dot shows exact drop position
- *  • Drop             → ProseMirror transaction moves the block
+ *  • Drop             → ProseMirror transaction moves the block(s)
  *  • Release / cancel → all chrome disappears cleanly
  *
  * Implementation notes:
- *  – Pure ProseMirror Plugin (no @dnd-kit), so it works with every node type
- *    including atomic nodes (blockImage, blockButton, …) and text blocks.
+ *  – Pure ProseMirror Plugin (no @dnd-kit), works with every node type.
  *  – Handle + drop-line live on document.body with position:fixed so they
  *    are never clipped by overflow:hidden/scroll containers.
  *  – dragover / drop are intercepted via Tiptap's handleDOMEvents (returns
  *    true) so ProseMirror's own drop handler never fires for our drags.
+ *  – Multi-select state is stored in selectedPositions (Set of doc positions).
+ *    Selected blocks get a data-dm-selected attribute for CSS highlighting.
  */
 
 import { Extension } from '@tiptap/core';
@@ -43,16 +46,37 @@ function buildDotGrid() {
   return svg;
 }
 
+// ─── Inject styles once ───────────────────────────────────────────────────────
+
+function injectStyles() {
+  if (document.getElementById('dm-drag-styles')) return;
+  const style = document.createElement('style');
+  style.id = 'dm-drag-styles';
+  style.textContent = `
+    [data-dm-selected] {
+      outline: 2px solid rgba(35, 131, 226, 0.4) !important;
+      outline-offset: 1px;
+      border-radius: 4px;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 // ─── View class ──────────────────────────────────────────────────────────────
 
 class DragHandleView {
   constructor(view) {
     this.view        = view;
     this.hoveredPos  = null;   // top-level block pos currently hovered
-    this.dragFromPos = null;   // pos of the block being dragged
+    this.dragFromPos = null;   // pos of the block the drag started from
     this.dragging    = false;
     this.dropPos     = null;   // resolved drop target position
+    this.draggingNodes = [];   // { pos, node } pairs being dragged
 
+    // Multi-select state
+    this.selectedPositions = new Set(); // Set of top-level block positions
+
+    injectStyles();
     this._buildHandle();
     this._buildDropLine();
 
@@ -60,16 +84,16 @@ class DragHandleView {
     document.body.appendChild(this.dropLine);
 
     // Bind
-    this._onMove  = this._onMove.bind(this);
-    this._onLeave = this._onLeave.bind(this);
-    this._onDragStart = this._onDragStart.bind(this);
-    this._onDragEnd   = this._onDragEnd.bind(this);
+    this._onMove          = this._onMove.bind(this);
+    this._onLeave         = this._onLeave.bind(this);
+    this._onDragStart     = this._onDragStart.bind(this);
+    this._onDragEnd       = this._onDragEnd.bind(this);
+    this._onContainerDown = this._onContainerDown.bind(this);
 
-    // Listen for hover on the editor's immediate parent
-    // (EditorContent wrapper — covers full content area including padding)
     this._container = view.dom.parentElement;
     this._container.addEventListener('mousemove', this._onMove);
     this._container.addEventListener('mouseleave', this._onLeave);
+    this._container.addEventListener('mousedown', this._onContainerDown);
 
     this.handle.addEventListener('dragstart', this._onDragStart);
     this.handle.addEventListener('dragend',   this._onDragEnd);
@@ -108,9 +132,25 @@ class DragHandleView {
     el.addEventListener('mouseleave', (e) => {
       el.style.background = 'transparent';
       el.style.color       = 'rgba(55,53,47,0.30)';
-      // If cursor left handle without going back into the editor, hide
       if (!this._container.contains(e.relatedTarget)) {
         if (!this.dragging) this._hide();
+      }
+    });
+
+    // Click to select / shift+click to multi-select
+    // Use mousedown + mouseup pattern to avoid firing after a drag
+    let _mouseDownPos = null;
+    el.addEventListener('mousedown', (e) => {
+      _mouseDownPos = { x: e.clientX, y: e.clientY };
+    });
+    el.addEventListener('mouseup', (e) => {
+      if (!_mouseDownPos) return;
+      const dx = Math.abs(e.clientX - _mouseDownPos.x);
+      const dy = Math.abs(e.clientY - _mouseDownPos.y);
+      _mouseDownPos = null;
+      // Only treat as a click if cursor didn't move (not a drag)
+      if (dx < 5 && dy < 5 && !this.dragging) {
+        this._onHandleClick(e);
       }
     });
 
@@ -130,7 +170,6 @@ class DragHandleView {
       display: none;
     `;
 
-    // Blue circle at the left end (Notion's style)
     const dot = document.createElement('div');
     dot.style.cssText = `
       position: absolute;
@@ -149,18 +188,16 @@ class DragHandleView {
 
   /** Return the top-level block at viewport coordinates, or null. */
   _blockAt(clientX, clientY) {
-    const view      = this.view;
-    const hit       = view.posAtCoords({ left: clientX, top: clientY });
+    const view = this.view;
+    const hit  = view.posAtCoords({ left: clientX, top: clientY });
     if (!hit) return null;
 
     try {
-      // For atomic nodes, posAtCoords returns { pos, inside } where
-      // inside is the atom's own position. Use whichever is more useful.
       const rawPos  = hit.inside >= 0 ? hit.inside : hit.pos;
       const $pos    = view.state.doc.resolve(rawPos);
       if ($pos.depth === 0) return null;
 
-      const nodePos = $pos.before(1);          // position of depth-1 ancestor
+      const nodePos = $pos.before(1);
       const node    = view.state.doc.nodeAt(nodePos);
       if (!node) return null;
 
@@ -180,9 +217,54 @@ class DragHandleView {
   }
 
   _positionHandle(rect) {
-    // Vertically centre on the block; 28 px to the left of its content edge
     this.handle.style.top  = `${rect.top + rect.height / 2 - 10}px`;
     this.handle.style.left = `${rect.left - 28}px`;
+  }
+
+  // ─── Multi-select ──────────────────────────────────────────────────────────
+
+  _onHandleClick(e) {
+    if (this.hoveredPos === null) return;
+    const pos = this.hoveredPos;
+
+    if (e.shiftKey || e.metaKey || e.ctrlKey) {
+      // Toggle this block in/out of selection
+      if (this.selectedPositions.has(pos)) {
+        this.selectedPositions.delete(pos);
+      } else {
+        this.selectedPositions.add(pos);
+      }
+    } else {
+      // Single select — also set ProseMirror NodeSelection so StylePanel works
+      this.selectedPositions.clear();
+      this.selectedPositions.add(pos);
+      try {
+        const sel = NodeSelection.create(this.view.state.doc, pos);
+        this.view.dispatch(this.view.state.tr.setSelection(sel));
+      } catch { /* text nodes can't always be NodeSelected */ }
+    }
+
+    this._updateSelectionVisuals();
+  }
+
+  _clearSelection() {
+    this.selectedPositions.clear();
+    this._updateSelectionVisuals();
+  }
+
+  _updateSelectionVisuals() {
+    // Remove attribute from all previously selected elements
+    document.querySelectorAll('[data-dm-selected]').forEach(el => {
+      el.removeAttribute('data-dm-selected');
+    });
+    // Apply to currently selected
+    this.selectedPositions.forEach(pos => {
+      try {
+        const dom = this.view.nodeDOM(pos);
+        const el  = (dom && dom.nodeType === 1) ? dom : dom?.parentElement;
+        if (el) el.setAttribute('data-dm-selected', '');
+      } catch { /* pos may be stale */ }
+    });
   }
 
   // ─── Hover tracking ────────────────────────────────────────────────────────
@@ -200,9 +282,15 @@ class DragHandleView {
   }
 
   _onLeave(e) {
-    // Don't hide if cursor moved onto the handle itself
     if (e.relatedTarget === this.handle || this.handle.contains(e.relatedTarget)) return;
     if (!this.dragging) this._hide();
+  }
+
+  /** Clear selection when clicking inside the editor but not on the handle. */
+  _onContainerDown(e) {
+    if (!this.handle.contains(e.target)) {
+      this._clearSelection();
+    }
   }
 
   // ─── Drag lifecycle (fired on the handle element) ──────────────────────────
@@ -215,39 +303,72 @@ class DragHandleView {
 
     const view = this.view;
 
-    // Select the whole block so ProseMirror highlights it
+    // Determine which blocks we're moving:
+    // If the dragged block is part of a multi-selection, move all selected.
+    // Otherwise, move just the dragged block.
+    if (this.selectedPositions.size > 1 && this.selectedPositions.has(this.hoveredPos)) {
+      const sorted = [...this.selectedPositions].sort((a, b) => a - b);
+      this.draggingNodes = sorted
+        .map(pos => ({ pos, node: view.state.doc.nodeAt(pos) }))
+        .filter(d => d.node);
+    } else {
+      const node = view.state.doc.nodeAt(this.hoveredPos);
+      this.draggingNodes = node ? [{ pos: this.hoveredPos, node }] : [];
+    }
+
+    if (this.draggingNodes.length === 0) { e.preventDefault(); return; }
+
+    // Select the dragged block in ProseMirror (for highlight)
     try {
       const sel = NodeSelection.create(view.state.doc, this.dragFromPos);
       view.dispatch(view.state.tr.setSelection(sel));
-    } catch { /* text nodes can't always be NodeSelected; that's fine */ }
+    } catch { /* fine */ }
 
     e.dataTransfer.effectAllowed = 'move';
-    // Custom MIME type — our drop handler checks for this to distinguish
-    // our drags from clipboard pastes / other drops.
     e.dataTransfer.setData('application/x-dm-drag', String(this.dragFromPos));
 
     // ── Drag ghost ──
-    // Clone the block's DOM, make it slightly opaque with a card shadow
-    const dom = view.nodeDOM(this.dragFromPos);
-    const domEl = (dom && dom.nodeType === 1) ? dom : dom?.parentElement;
-    if (domEl) {
-      const rect  = domEl.getBoundingClientRect();
-      const ghost = domEl.cloneNode(true);
-      ghost.style.cssText += `
-        position: fixed;
-        top: -9999px; left: -9999px;
-        width: ${rect.width}px;
-        opacity: 0.75;
+    if (this.draggingNodes.length > 1) {
+      // Multi-block: show a pill label
+      const ghost = document.createElement('div');
+      ghost.style.cssText = `
+        position: fixed; top: -9999px; left: -9999px;
+        padding: 6px 12px;
         background: #fff;
         border-radius: 6px;
         box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        font-size: 13px;
+        font-family: var(--font-sans, Inter, sans-serif);
+        color: #1a1a2e;
         pointer-events: none;
-        overflow: hidden;
+        opacity: 0.9;
       `;
+      ghost.textContent = `Moving ${this.draggingNodes.length} blocks`;
       document.body.appendChild(ghost);
-      e.dataTransfer.setDragImage(ghost, e.clientX - rect.left, 12);
-      // Remove after the browser has captured the image
+      e.dataTransfer.setDragImage(ghost, 60, 16);
       requestAnimationFrame(() => ghost.remove());
+    } else {
+      // Single block: clone its DOM as the ghost
+      const dom   = view.nodeDOM(this.dragFromPos);
+      const domEl = (dom && dom.nodeType === 1) ? dom : dom?.parentElement;
+      if (domEl) {
+        const rect  = domEl.getBoundingClientRect();
+        const ghost = domEl.cloneNode(true);
+        ghost.style.cssText += `
+          position: fixed;
+          top: -9999px; left: -9999px;
+          width: ${rect.width}px;
+          opacity: 0.75;
+          background: #fff;
+          border-radius: 6px;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+          pointer-events: none;
+          overflow: hidden;
+        `;
+        document.body.appendChild(ghost);
+        e.dataTransfer.setDragImage(ghost, e.clientX - rect.left, 12);
+        requestAnimationFrame(() => ghost.remove());
+      }
     }
 
     this.handle.style.cursor  = 'grabbing';
@@ -258,11 +379,11 @@ class DragHandleView {
   _onDragEnd() {
     this.dragging    = false;
     document.body.classList.remove('dm-dragging');
-    this.dragFromPos = null;
-    this.dropPos     = null;
+    this.dragFromPos  = null;
+    this.dropPos      = null;
+    this.draggingNodes = [];
     this.handle.style.cursor = 'grab';
     this.dropLine.style.display = 'none';
-    // Don't re-show the handle; next mousemove will do that
   }
 
   // ─── Drag-over / drop (called from handleDOMEvents in the Plugin) ──────────
@@ -301,36 +422,60 @@ class DragHandleView {
     e.preventDefault();
     this.dropLine.style.display = 'none';
 
-    const from = this.dragFromPos;
-    const to   = this.dropPos;
+    const nodes = this.draggingNodes;
+    const to    = this.dropPos;
 
-    // Bail if no valid drag state
-    if (from === null || to === null) { this._resetDragState(); return; }
+    if (nodes.length === 0 || to === null) { this._resetDragState(); return; }
 
-    const node = view.state.doc.nodeAt(from);
-    if (!node) { this._resetDragState(); return; }
+    if (nodes.length === 1) {
+      // ── Single block drop (original logic) ──
+      const { pos: from, node } = nodes[0];
 
-    // No-op: dropping onto the block's own position or immediately after it
-    if (to === from || to === from + node.nodeSize) { this._resetDragState(); return; }
+      if (to === from || to === from + node.nodeSize) { this._resetDragState(); return; }
 
-    // ── ProseMirror transaction ──
-    // Delete at source, insert at target.
-    // When target is after the source, every position after the deletion shifts
-    // left by nodeSize, so we compensate.
-    const insertAt = to > from ? to - node.nodeSize : to;
+      const insertAt = to > from ? to - node.nodeSize : to;
+      const tr = view.state.tr;
+      tr.delete(from, from + node.nodeSize);
+      tr.insert(insertAt, node);
+      view.dispatch(tr);
+    } else {
+      // ── Multi-block drop ──
+      // Nodes are already sorted ascending by position.
+      const firstPos = nodes[0].pos;
+      const lastNode = nodes[nodes.length - 1];
+      const lastEnd  = lastNode.pos + lastNode.node.nodeSize;
 
-    const tr = view.state.tr;
-    tr.delete(from, from + node.nodeSize);
-    tr.insert(insertAt, node);
-    view.dispatch(tr);
+      // No-op if dropping inside the selected range
+      if (to > firstPos && to <= lastEnd) { this._resetDragState(); return; }
+
+      const tr = view.state.tr;
+
+      // Delete nodes from highest to lowest so earlier positions stay valid
+      const sortedDesc = [...nodes].sort((a, b) => b.pos - a.pos);
+      sortedDesc.forEach(({ pos, node }) => {
+        const from = tr.mapping.map(pos);
+        const end  = tr.mapping.map(pos + node.nodeSize);
+        tr.delete(from, end);
+      });
+
+      // Map the target insertion position through all the deletions
+      const insertAt = tr.mapping.map(to);
+
+      // Insert all nodes in original (ascending) order
+      tr.insert(insertAt, nodes.map(d => d.node));
+
+      view.dispatch(tr);
+    }
 
     this._resetDragState();
+    this._clearSelection();
   }
 
   _resetDragState() {
-    this.dragging    = false;
-    this.dragFromPos = null;
-    this.dropPos     = null;
+    this.dragging     = false;
+    this.dragFromPos  = null;
+    this.dropPos      = null;
+    this.draggingNodes = [];
     document.body.classList.remove('dm-dragging');
   }
 
@@ -341,8 +486,11 @@ class DragHandleView {
   destroy() {
     this._container.removeEventListener('mousemove', this._onMove);
     this._container.removeEventListener('mouseleave', this._onLeave);
+    this._container.removeEventListener('mousedown', this._onContainerDown);
     this.handle.remove();
     this.dropLine.remove();
+    const styles = document.getElementById('dm-drag-styles');
+    if (styles) styles.remove();
   }
 }
 
@@ -352,7 +500,6 @@ export const DragHandle = Extension.create({
   name: 'notionDragHandle',
 
   addProseMirrorPlugins() {
-    // We keep a reference so handleDOMEvents can delegate to the view instance.
     let handleView = null;
 
     return [
@@ -366,31 +513,18 @@ export const DragHandle = Extension.create({
 
         props: {
           handleDOMEvents: {
-            /**
-             * Intercept dragover events when OUR drag is in progress.
-             * Returning true prevents ProseMirror's own dragover handler.
-             */
             dragover(view, e) {
               if (!handleView?.dragging) return false;
               handleView.onDragOver(view, e);
               return true;
             },
 
-            /**
-             * Show / hide drop line as cursor leaves the editor area.
-             * Return false: we still want default cursor updates.
-             */
             dragleave(view, e) {
               if (!handleView?.dragging) return false;
               handleView.onDragLeave(view, e);
               return false;
             },
 
-            /**
-             * Intercept drop events when OUR drag is in progress.
-             * Returning true prevents ProseMirror's clipboard-paste logic
-             * from firing on our custom drag data.
-             */
             drop(view, e) {
               if (!handleView?.dragging) return false;
               handleView.onDrop(view, e);
