@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useToast } from '../ui/Toast.jsx';
+import Icon from '../ui/Icon.jsx';
 
 function Card({ children }) {
   return (
@@ -77,10 +78,12 @@ export default function VariablesSection({ variables, onAdd, onUpdate, onDelete 
               />
               <button
                 onClick={() => onDelete(i)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-muted)', fontSize: 16, padding: '4px 8px', borderRadius: 'var(--radius-sm)' }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-muted)', padding: '4px 6px', borderRadius: 'var(--radius-sm)', display: 'flex', alignItems: 'center' }}
                 title="Delete variable"
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-ghost)'; e.currentTarget.style.color = 'var(--color-danger)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--color-muted)'; }}
               >
-                ✕
+                <Icon name="delete" size={16} style={{ color: 'inherit' }} />
               </button>
             </div>
           ))}

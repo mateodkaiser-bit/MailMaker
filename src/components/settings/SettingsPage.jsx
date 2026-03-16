@@ -6,6 +6,7 @@ import ColorPicker from '../ui/ColorPicker.jsx';
 import NumberInput from '../ui/NumberInput.jsx';
 import VariablesSection from './VariablesSection.jsx';
 import { useToast } from '../ui/Toast.jsx';
+import Icon from '../ui/Icon.jsx';
 
 const DEFAULTS = getDefaultTheme();
 const FONT_OPTIONS = [
@@ -187,9 +188,11 @@ export default function SettingsPage() {
                   color: 'var(--color-slate)',
                   border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)',
                   fontWeight: 500, fontSize: 'var(--text-sm)', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: 6,
                 }}
               >
-                ⬇ Export JSON
+                <Icon name="download" size={16} style={{ color: 'inherit' }} />
+                Export JSON
               </button>
             </Row>
           </Card>

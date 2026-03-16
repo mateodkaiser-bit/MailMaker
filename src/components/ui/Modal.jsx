@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import Icon from './Icon.jsx';
 
 export default function Modal({ open, onClose, title, children, footer }) {
   useEffect(() => {
@@ -43,11 +44,14 @@ export default function Modal({ open, onClose, title, children, footer }) {
             onClick={onClose}
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
-              color: 'var(--color-muted)', fontSize: 18, lineHeight: 1,
-              padding: '2px 6px',
+              color: 'var(--color-muted)', padding: '4px',
+              borderRadius: 'var(--radius-sm)',
+              display: 'flex', alignItems: 'center',
             }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--color-ghost)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'none'}
           >
-            ✕
+            <Icon name="close" size={18} />
           </button>
         </div>
 
