@@ -92,7 +92,6 @@ export default function SlashMenu({ editor }) {
 
   const coords = editor.view.coordsAtPos(state.range?.from ?? 0);
 
-  // Build grouped display respecting search filter
   const groupedFiltered = state.query
     ? [{ group: null, items: filtered }]
     : COMMANDS.map(g => ({ group: g.group, items: g.items.filter(i => filtered.includes(i)) })).filter(g => g.items.length > 0);
@@ -104,28 +103,29 @@ export default function SlashMenu({ editor }) {
       ref={ref}
       style={{
         position: 'fixed',
-        top: coords.bottom + 6,
+        top: coords.bottom + 8,
         left: Math.max(8, coords.left),
-        background: 'var(--color-white)',
-        border: '1px solid var(--color-border)',
-        borderRadius: 'var(--radius-xl)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
+        // Blueprint: blue-grey background, thick black border, sharp corners
+        background: 'var(--color-hover-light)',
+        border: '2px solid #000',
+        borderRadius: 0,
+        boxShadow: 'none',
         zIndex: 500,
-        minWidth: 260,
+        minWidth: 264,
         maxHeight: 380,
         overflowY: 'auto',
-        padding: '6px 0 0',
+        padding: '8px 0 0',
       }}
     >
       {groupedFiltered.map(({ group, items }) => (
         <div key={group ?? 'results'}>
           {group && (
             <div style={{
-              padding: '4px 14px 3px',
+              padding: '0 14px 6px',
               fontSize: 10,
               fontWeight: 700,
-              letterSpacing: '0.08em',
-              color: 'var(--color-muted)',
+              letterSpacing: '0.07em',
+              color: 'var(--color-shell)',
               textTransform: 'uppercase',
             }}>
               {group}
@@ -142,27 +142,28 @@ export default function SlashMenu({ editor }) {
                 style={{
                   display: 'flex', alignItems: 'center', gap: 10,
                   width: '100%', textAlign: 'left',
-                  padding: '7px 12px',
-                  background: active ? 'var(--color-ghost)' : 'none',
-                  border: 'none', cursor: 'pointer',
-                  transition: 'background 0.08s',
+                  padding: '8px 12px',
+                  // Safety Orange for active; transparent otherwise
+                  background: active ? 'var(--color-punch)' : 'transparent',
+                  border: 'none',
+                  borderBottom: '1px solid rgba(0,0,0,0.10)',
+                  cursor: 'pointer',
                 }}
               >
-                {/* Icon container */}
+                {/* Icon tile — white box on active, shell on inactive */}
                 <div style={{
-                  width: 30, height: 30,
-                  background: active ? 'var(--color-white)' : 'var(--color-ghost)',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius-md)',
+                  width: 28, height: 28,
+                  background: active ? '#fff' : 'var(--color-shell)',
+                  border: 'none',
+                  borderRadius: 0,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   flexShrink: 0,
-                  transition: 'background 0.08s',
                 }}>
                   <span
                     className="material-symbols-rounded"
                     style={{
                       fontSize: 15,
-                      color: 'var(--color-slate)',
+                      color: active ? 'var(--color-punch)' : 'var(--color-hover-light)',
                       fontVariationSettings: "'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 16",
                     }}
                   >
@@ -174,15 +175,15 @@ export default function SlashMenu({ editor }) {
                 <div style={{ minWidth: 0 }}>
                   <div style={{
                     fontSize: 'var(--text-sm)',
-                    fontWeight: 500,
-                    color: 'var(--color-ink)',
+                    fontWeight: 600,
+                    color: active ? '#fff' : 'var(--color-shell)',
                     lineHeight: 1.3,
                   }}>
                     {cmd.label}
                   </div>
                   <div style={{
                     fontSize: 'var(--text-xs)',
-                    color: 'var(--color-muted)',
+                    color: active ? 'rgba(255,255,255,0.75)' : 'var(--color-ink)',
                     lineHeight: 1.4,
                     marginTop: 1,
                   }}>
@@ -195,15 +196,15 @@ export default function SlashMenu({ editor }) {
         </div>
       ))}
 
-      {/* Keyboard hint */}
+      {/* Keyboard hint bar */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 8,
         padding: '6px 14px',
-        borderTop: '1px solid var(--color-border)',
-        marginTop: 2,
+        borderTop: '1.5px solid rgba(0,0,0,0.2)',
+        background: 'var(--color-shell)',
       }}>
         {[['arrow_upward', ''], ['arrow_downward', 'navigate'], ['keyboard_return', 'select']].map(([icon, label]) => (
-          <span key={icon} style={{ display: 'flex', alignItems: 'center', gap: 3, color: 'var(--color-muted)', fontSize: 10 }}>
+          <span key={icon} style={{ display: 'flex', alignItems: 'center', gap: 3, color: 'var(--color-hover-light)', fontSize: 10 }}>
             <span
               className="material-symbols-rounded"
               style={{ fontSize: 11, fontVariationSettings: "'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 12" }}

@@ -17,54 +17,55 @@ body {
   font-family: var(--font-sans);
   font-size: var(--text-base);
   color: var(--color-ink);
-  background: var(--color-white);
+  background: var(--color-shell);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 /* TipTap editor content styles */
 .tiptap {
   outline: none;
   min-height: 100%;
-  padding: var(--space-8) var(--space-6);
+  padding: 32px 24px;
 }
 
 .tiptap p {
-  margin: 0 0 var(--space-4);
+  margin: 0 0 16px;
   line-height: 1.6;
 }
 
 .tiptap h1 {
   font-size: var(--text-2xl);
   font-weight: 700;
-  line-height: 1.3;
-  margin: 0 0 var(--space-4);
+  line-height: 1.2;
+  margin: 0 0 16px;
+  letter-spacing: -0.01em;
 }
 
 .tiptap h2 {
   font-size: var(--text-xl);
   font-weight: 700;
-  line-height: 1.3;
-  margin: 0 0 var(--space-4);
+  line-height: 1.2;
+  margin: 0 0 16px;
+  letter-spacing: -0.01em;
 }
 
 .tiptap h3 {
   font-size: var(--text-lg);
   font-weight: 600;
   line-height: 1.3;
-  margin: 0 0 var(--space-4);
+  margin: 0 0 16px;
 }
 
 .tiptap a {
   color: var(--color-accent);
   text-decoration: underline;
-  opacity: 0.8;
 }
 
 .tiptap code {
   font-family: var(--font-mono);
   background: var(--color-ghost);
   padding: 2px 4px;
-  border-radius: var(--radius-sm);
   font-size: 0.9em;
 }
 
@@ -77,17 +78,25 @@ body {
   height: 0;
 }
 
-/* ── Dot-grid canvas background ────────────────────────────────────────── */
-
-.dot-grid {
-  background-color: #f9fafb;
-  background-image: radial-gradient(circle, rgba(0,0,0,0.18) 1px, transparent 1px);
-  background-size: 22px 22px;
+/* ── Active block: 3 px Safety Orange left indicator ───── */
+/* Uses box-shadow so it renders outside the box with       */
+/* zero layout impact. No glow, no background change.      */
+.ProseMirror-selectednode {
+  outline: none !important;
+  box-shadow: -4px 0 0 0 var(--color-punch) !important;
 }
 
-/* ── Material Symbols Rounded base ─────────────────────────────────────── */
+/* ── Canvas background — blueprint grid on shell ────────── */
+/* Replaces the dot-grid; subtle 32 px crosshatch           */
+.dot-grid {
+  background-color: var(--color-shell);
+  background-image:
+    linear-gradient(rgba(148, 181, 205, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 181, 205, 0.12) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
 
-/* Default variation settings — overridden per-instance via inline style */
+/* ── Material Symbols Rounded ───────────────────────────── */
 .material-symbols-rounded {
   font-family: 'Material Symbols Rounded', sans-serif;
   font-style: normal;
@@ -105,10 +114,7 @@ body {
   flex-shrink: 0;
 }
 
-/* ── Notion-style drag handle ───────────────────────────────────────────── */
-
-/* While a block drag is in progress, prevent accidental text selection
-   and keep the grabbing cursor everywhere. */
+/* ── Drag cursor during block moves ────────────────────── */
 body.dm-dragging,
 body.dm-dragging * {
   cursor: grabbing !important;
@@ -116,18 +122,17 @@ body.dm-dragging * {
   -webkit-user-select: none !important;
 }
 
-/* Scrollbar styles */
+/* ── Scrollbars ─────────────────────────────────────────── */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.08);
-  border-radius: 3px;
+  background: rgba(148, 181, 205, 0.4);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.12);
+  background: rgba(148, 181, 205, 0.65);
 }

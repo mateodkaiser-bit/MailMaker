@@ -1,71 +1,97 @@
+/**
+ * Design Tokens — Swiss International Style
+ *
+ * Palette: Prussian Shell × Safety Orange
+ *   --color-shell        #404E59  dark structural surface (nav, app bg)
+ *   --color-surface-mid  #7E9AAF  mid surface (borders, inputs, panels)
+ *   --color-hover-light  #94B5CD  hover states, dividers, slash menu bg
+ *   --color-punch        #FF5F1F  Safety Orange — CTA, active selections
+ *   canvas               #FFFFFF  email body (never changes)
+ *
+ * Geometry: 0–2 px radii, no box-shadows, 1.5 px solid borders.
+ * Grid: 8 px base unit (8, 16, 24, 32, 40, 48, 64 px).
+ */
+
 :root {
-  /* Color — Neutrals */
-  --color-ink:        #1a1a1a;
-  --color-ink-light:  #2d2d2d;
-  --color-slate:      #6B7280;
-  --color-muted:      #B0B8C1;
-  --color-ghost:      #F9FAFB;
-  --color-border:     #E5E7EB;
-  --color-white:      #FFFFFF;
-  --color-surface:    #FAFAFA;
-  --color-preview-bg: #F5F5F5;
+  /* ── Shell palette ──────────────────────────────────────── */
+  --color-shell:        #404E59;
+  --color-shell-hover:  #4f6272;
 
-  /* Color — Accent (Indigo) */
-  --color-accent:       #2563EB;
-  --color-accent-hover: #3B82F6;
-  --color-accent-light: #EFF6FF;
-  --color-accent-soft:  #F0F4FF;
+  --color-surface-mid:  #7E9AAF;
+  --color-hover-light:  #94B5CD;
 
-  /* Legacy amber tokens → accent aliases for backward compat */
-  --color-amber:        #2563EB;
-  --color-amber-hover:  #3B82F6;
-  --color-amber-light:  #EFF6FF;
-  --color-amber-soft:   #F0F4FF;
+  --color-punch:        #FF5F1F;
+  --color-punch-hover:  #E04D10;
+  --color-punch-light:  #FFF0E8;
+  --color-punch-soft:   #FFF5EE;
 
-  /* Color — Semantic */
+  /* ── Neutrals ───────────────────────────────────────────── */
+  --color-ink:          #1C2730;
+  --color-ink-light:    #404E59;
+  --color-slate:        #5C7080;
+  --color-muted:        #7E9AAF;
+  --color-ghost:        #F0F4F7;
+  --color-border:       #7E9AAF;
+  --color-white:        #FFFFFF;
+  --color-surface:      #F7F9FA;
+  --color-preview-bg:   #404E59;
+
+  /* ── Accent → Safety Orange ─────────────────────────────── */
+  --color-accent:       #FF5F1F;
+  --color-accent-hover: #E04D10;
+  --color-accent-light: #FFF0E8;
+  --color-accent-soft:  #FFF5EE;
+
+  /* Legacy amber aliases */
+  --color-amber:        #FF5F1F;
+  --color-amber-hover:  #E04D10;
+  --color-amber-light:  #FFF0E8;
+  --color-amber-soft:   #FFF5EE;
+
+  /* ── Semantic ───────────────────────────────────────────── */
   --color-success:    #059669;
   --color-success-bg: #ECFDF5;
-  --color-info:       #2563EB;
-  --color-info-bg:    #EFF6FF;
+  --color-info:       #94B5CD;
+  --color-info-bg:    #EBF3FA;
   --color-danger:     #DC2626;
   --color-danger-bg:  #FEF2F2;
 
-  /* Typography */
-  --font-sans:        'Inter', -apple-system, sans-serif;
-  --font-mono:        'JetBrains Mono', 'Fira Code', monospace;
+  /* ── Typography — Neo-Grotesque ─────────────────────────── */
+  --font-sans: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
-  --text-xs:    11px;
-  --text-sm:    13px;
-  --text-base:  14px;
-  --text-md:    16px;
-  --text-lg:    18px;
-  --text-xl:    24px;
-  --text-2xl:   32px;
+  --text-xs:   11px;
+  --text-sm:   13px;
+  --text-base: 14px;
+  --text-md:   16px;
+  --text-lg:   18px;
+  --text-xl:   24px;
+  --text-2xl:  32px;
 
-  /* Spacing (4px base unit) */
-  --space-1:  4px;
-  --space-2:  8px;
-  --space-3:  12px;
-  --space-4:  16px;
-  --space-5:  20px;
-  --space-6:  24px;
-  --space-8:  32px;
-  --space-10: 40px;
-  --space-16: 64px;
+  /* ── Spacing — strict 8 px grid ─────────────────────────── */
+  --space-1:  8px;
+  --space-2:  16px;
+  --space-3:  24px;
+  --space-4:  32px;
+  --space-5:  40px;
+  --space-6:  48px;
+  --space-8:  64px;
+  --space-10: 80px;
+  --space-16: 128px;
 
-  /* Radii */
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-  --radius-xl: 12px;
+  /* ── Geometry — sharp / print aesthetic ─────────────────── */
+  /* Max 2 px radius; 0 on most elements */
+  --radius-sm: 0px;
+  --radius-md: 2px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
 
+  /* ── No decorative shadows — use borders ─────────────────── */
+  --shadow-sm:     none;
+  --shadow-md:     none;
+  --shadow-canvas: none;
 
-  /* Shadows */
-  --shadow-sm:     0 1px 3px rgba(0,0,0,0.08);
-  --shadow-md:     0 4px 16px rgba(0,0,0,0.10);
-  --shadow-canvas: 0 2px 12px rgba(0,0,0,0.07);
-
-  /* Layout */
+  /* ── Layout ─────────────────────────────────────────────── */
   --nav-width:     220px;
   --panel-width:   272px;
   --canvas-max:    680px;

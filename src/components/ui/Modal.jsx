@@ -15,7 +15,7 @@ export default function Modal({ open, onClose, title, children, footer }) {
     <div
       style={{
         position: 'fixed', inset: 0,
-        background: 'rgba(0,0,0,0.4)',
+        background: 'rgba(26,39,48,0.55)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         zIndex: 1000,
       }}
@@ -24,8 +24,9 @@ export default function Modal({ open, onClose, title, children, footer }) {
       <div
         style={{
           background: 'var(--color-white)',
-          borderRadius: 'var(--radius-xl)',
-          boxShadow: 'var(--shadow-md)',
+          border: '1.5px solid #000',
+          borderRadius: 0,
+          boxShadow: 'none',
           width: 480,
           maxWidth: '90vw',
           maxHeight: '85vh',
@@ -37,16 +38,20 @@ export default function Modal({ open, onClose, title, children, footer }) {
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '16px 20px',
-          borderBottom: '1px solid var(--color-border)',
+          borderBottom: '1.5px solid var(--color-surface-mid)',
         }}>
-          <span style={{ fontWeight: 700, fontSize: 'var(--text-md)' }}>{title}</span>
+          <span style={{
+            fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
+            letterSpacing: '0.06em', color: 'var(--color-muted)',
+          }}>
+            {title}
+          </span>
           <button
             onClick={onClose}
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
               color: 'var(--color-muted)', padding: '4px',
-              borderRadius: 'var(--radius-sm)',
-              display: 'flex', alignItems: 'center',
+              borderRadius: 0, display: 'flex', alignItems: 'center',
             }}
             onMouseEnter={e => e.currentTarget.style.background = 'var(--color-ghost)'}
             onMouseLeave={e => e.currentTarget.style.background = 'none'}
@@ -64,7 +69,7 @@ export default function Modal({ open, onClose, title, children, footer }) {
         {footer && (
           <div style={{
             padding: '12px 20px',
-            borderTop: '1px solid var(--color-border)',
+            borderTop: '1.5px solid var(--color-surface-mid)',
             display: 'flex', gap: 8, justifyContent: 'flex-end',
           }}>
             {footer}

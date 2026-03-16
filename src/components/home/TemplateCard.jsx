@@ -5,35 +5,22 @@ import Icon from '../ui/Icon.jsx';
 
 function EmailThumbnail() {
   return (
-    <div style={{
-      height: '100%',
-      padding: '12px 10px',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 5,
-    }}>
-      {/* Header bar */}
-      <div style={{ height: 8, width: '45%', background: 'var(--color-border)', borderRadius: 3 }} />
-      {/* Sub-line */}
-      <div style={{ height: 5, width: '70%', background: '#EAECEF', borderRadius: 3, marginTop: 2 }} />
-      <div style={{ height: 5, width: '60%', background: '#EAECEF', borderRadius: 3 }} />
-      {/* Image placeholder */}
+    <div style={{ height: '100%', padding: '12px 10px', display: 'flex', flexDirection: 'column', gap: 5 }}>
+      <div style={{ height: 8, width: '45%', background: 'var(--color-surface-mid)' }} />
+      <div style={{ height: 5, width: '70%', background: 'var(--color-hover-light)', marginTop: 2 }} />
+      <div style={{ height: 5, width: '60%', background: 'var(--color-hover-light)' }} />
       <div style={{
-        height: 36, background: 'var(--color-ghost)', borderRadius: 4, marginTop: 3,
+        height: 36, background: 'var(--color-ghost)', marginTop: 3,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        border: '1px solid var(--color-border)',
+        border: '1px solid var(--color-surface-mid)',
       }}>
-        <Icon name="image" size={14} style={{ color: 'var(--color-border)' }} />
+        <Icon name="image" size={14} style={{ color: 'var(--color-surface-mid)' }} />
       </div>
-      {/* Text lines */}
-      <div style={{ height: 5, width: '85%', background: '#EAECEF', borderRadius: 3, marginTop: 2 }} />
-      <div style={{ height: 5, width: '75%', background: '#EAECEF', borderRadius: 3 }} />
-      <div style={{ height: 5, width: '80%', background: '#EAECEF', borderRadius: 3 }} />
-      {/* Button */}
-      <div style={{
-        height: 14, width: 60, background: 'var(--color-border)',
-        borderRadius: 4, marginTop: 3, alignSelf: 'center',
-      }} />
+      <div style={{ height: 5, width: '85%', background: 'var(--color-hover-light)', marginTop: 2 }} />
+      <div style={{ height: 5, width: '75%', background: 'var(--color-hover-light)' }} />
+      <div style={{ height: 5, width: '80%', background: 'var(--color-hover-light)' }} />
+      {/* CTA button preview — orange */}
+      <div style={{ height: 14, width: 60, background: 'var(--color-punch)', marginTop: 3, alignSelf: 'center' }} />
     </div>
   );
 }
@@ -52,31 +39,23 @@ export default function TemplateCard({ template, onDuplicate, onDelete }) {
     <div
       style={{
         background: 'var(--color-white)',
-        border: '1.5px solid var(--color-border)',
-        borderRadius: 'var(--radius-xl)',
+        border: '1.5px solid var(--color-surface-mid)',
+        borderRadius: 0,
         overflow: 'hidden',
-        boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+        boxShadow: 'none',
         cursor: 'pointer',
-        transition: 'box-shadow 0.15s, border-color 0.15s, transform 0.15s',
+        transition: 'border-color 0.1s',
         position: 'relative',
       }}
-      onMouseEnter={e => {
-        e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)';
-        e.currentTarget.style.borderColor = '#D1D5DB';
-        e.currentTarget.style.transform = 'translateY(-2px)';
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.04)';
-        e.currentTarget.style.borderColor = 'var(--color-border)';
-        e.currentTarget.style.transform = 'translateY(0)';
-      }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-punch)'; }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-surface-mid)'; }}
       onClick={() => navigate(`/editor/${template.id}`)}
     >
       {/* Thumbnail */}
       <div style={{
         height: 148,
-        background: '#FAFAFA',
-        borderBottom: '1px solid var(--color-border)',
+        background: 'var(--color-ghost)',
+        borderBottom: '1px solid var(--color-surface-mid)',
         overflow: 'hidden',
       }}>
         <EmailThumbnail />
@@ -87,11 +66,8 @@ export default function TemplateCard({ template, onDuplicate, onDelete }) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
-              fontWeight: 600,
-              fontSize: 'var(--text-sm)',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
+              fontWeight: 600, fontSize: 'var(--text-sm)',
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
               color: 'var(--color-ink)',
             }}>
               {template.name}
@@ -101,15 +77,14 @@ export default function TemplateCard({ template, onDuplicate, onDelete }) {
             </div>
           </div>
 
-          {/* Three-dot menu */}
+          {/* Context menu */}
           <div style={{ position: 'relative', flexShrink: 0 }} onClick={e => e.stopPropagation()}>
             <button
               onClick={() => setMenuOpen(o => !o)}
               style={{
                 background: 'none', border: 'none', cursor: 'pointer',
                 color: 'var(--color-muted)', padding: '4px',
-                borderRadius: 'var(--radius-sm)',
-                display: 'flex', alignItems: 'center',
+                borderRadius: 0, display: 'flex', alignItems: 'center',
               }}
               onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-ghost)'; e.currentTarget.style.color = 'var(--color-slate)'; }}
               onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--color-muted)'; }}
@@ -119,18 +94,14 @@ export default function TemplateCard({ template, onDuplicate, onDelete }) {
 
             {menuOpen && (
               <>
-                <div
-                  style={{ position: 'fixed', inset: 0, zIndex: 9 }}
-                  onClick={() => setMenuOpen(false)}
-                />
+                <div style={{ position: 'fixed', inset: 0, zIndex: 9 }} onClick={() => setMenuOpen(false)} />
                 <div style={{
-                  position: 'absolute', right: 0, top: '100%', marginTop: 4,
+                  position: 'absolute', right: 0, top: '100%', marginTop: 2,
                   background: 'var(--color-white)',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius-lg)',
-                  boxShadow: 'var(--shadow-md)',
+                  border: '1.5px solid #000',
+                  borderRadius: 0,
+                  boxShadow: 'none',
                   zIndex: 10, minWidth: 150, overflow: 'hidden',
-                  padding: 4,
                 }}>
                   {menuItems.map(({ label, icon, action, danger }) => (
                     <button
@@ -139,9 +110,10 @@ export default function TemplateCard({ template, onDuplicate, onDelete }) {
                       style={{
                         display: 'flex', alignItems: 'center', gap: 8,
                         width: '100%', textAlign: 'left',
-                        padding: '7px 10px',
-                        background: 'none', border: 'none', cursor: 'pointer',
-                        borderRadius: 'var(--radius-sm)',
+                        padding: '8px 10px',
+                        background: 'none', border: 'none',
+                        borderBottom: '1px solid var(--color-ghost)',
+                        borderRadius: 0, cursor: 'pointer',
                         fontSize: 'var(--text-sm)',
                         color: danger ? 'var(--color-danger)' : 'var(--color-ink)',
                         fontWeight: 400,
@@ -149,11 +121,7 @@ export default function TemplateCard({ template, onDuplicate, onDelete }) {
                       onMouseEnter={e => e.currentTarget.style.background = 'var(--color-ghost)'}
                       onMouseLeave={e => e.currentTarget.style.background = 'none'}
                     >
-                      <Icon
-                        name={icon}
-                        size={14}
-                        style={{ color: danger ? 'var(--color-danger)' : 'var(--color-muted)', flexShrink: 0 }}
-                      />
+                      <Icon name={icon} size={14} style={{ color: danger ? 'var(--color-danger)' : 'var(--color-muted)', flexShrink: 0 }} />
                       {label}
                     </button>
                   ))}

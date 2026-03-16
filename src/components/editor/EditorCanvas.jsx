@@ -9,7 +9,6 @@ export default function EditorCanvas({ editor, theme }) {
   const [varMenuPos, setVarMenuPos] = useState({ x: 0, y: 0 });
 
   function handleKeyDown(e) {
-    // Ctrl/Cmd + Shift + V opens variable menu at cursor
     if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'V') {
       e.preventDefault();
       if (!editor) return;
@@ -32,13 +31,15 @@ export default function EditorCanvas({ editor, theme }) {
       }}
       onKeyDown={handleKeyDown}
     >
+      {/* Paper canvas — crisp white sheet floating on the dark shell */}
       <div
         style={{
           width: '100%',
           maxWidth: `${theme?.maxWidth ?? 680}px`,
-          background: theme?.backgroundColor ?? 'var(--color-white)',
-          borderRadius: 'var(--radius-xl)',
-          boxShadow: 'var(--shadow-canvas)',
+          background: theme?.backgroundColor ?? '#ffffff',
+          border: '1px solid #000',
+          borderRadius: 0,
+          boxShadow: 'none',
           minHeight: 400,
           position: 'relative',
         }}
