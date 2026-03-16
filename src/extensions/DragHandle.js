@@ -52,11 +52,10 @@ function injectStyles() {
   if (document.getElementById('dm-drag-styles')) return;
   const style = document.createElement('style');
   style.id = 'dm-drag-styles';
+  // Safety Orange left-bar indicator — matches .ProseMirror-selectednode style
   style.textContent = `
     [data-dm-selected] {
-      outline: 2px solid rgba(35, 131, 226, 0.4) !important;
-      outline-offset: 1px;
-      border-radius: 4px;
+      box-shadow: -4px 0 0 0 #FF5F1F !important;
     }
   `;
   document.head.appendChild(style);

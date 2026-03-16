@@ -27,18 +27,18 @@ export default function RightPanel({ editor, theme, onThemeChange }) {
       width: 'var(--panel-width)',
       height: '100%',
       overflowY: 'auto',
-      borderLeft: '1px solid var(--color-border)',
+      borderLeft: '1.5px solid var(--color-surface-mid)',
       background: 'var(--color-white)',
       flexShrink: 0,
     }}>
-      {panel === 'global'       && <GlobalStylePanel     theme={theme} onChange={onThemeChange} />}
-      {panel === 'text'         && <TextStylePanel        editor={editor} />}
-      {panel === 'image'        && <ImageStylePanel       editor={editor} />}
-      {panel === 'button'       && <ButtonStylePanel      editor={editor} />}
-      {panel === 'divider'      && <DividerStylePanel     editor={editor} />}
-      {panel === 'spacer'       && <SpacerStylePanel      editor={editor} />}
-      {panel === 'columns'      && <ColumnsStylePanel     editor={editor} />}
-      {panel === 'sharedInstance' && <SharedBlockInfoPanel editor={editor} />}
+      {panel === 'global'         && <GlobalStylePanel      theme={theme} onChange={onThemeChange} />}
+      {panel === 'text'           && <TextStylePanel         editor={editor} />}
+      {panel === 'image'          && <ImageStylePanel        editor={editor} />}
+      {panel === 'button'         && <ButtonStylePanel       editor={editor} />}
+      {panel === 'divider'        && <DividerStylePanel      editor={editor} />}
+      {panel === 'spacer'         && <SpacerStylePanel       editor={editor} />}
+      {panel === 'columns'        && <ColumnsStylePanel      editor={editor} />}
+      {panel === 'sharedInstance' && <SharedBlockInfoPanel   editor={editor} />}
     </div>
   );
 }

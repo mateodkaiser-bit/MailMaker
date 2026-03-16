@@ -52,6 +52,7 @@ export default function EditorPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
       <EditorTopBar
+        editor={editor}
         template={template}
         onRename={handleRename}
         html={html}

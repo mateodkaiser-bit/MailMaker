@@ -14,8 +14,8 @@ export default function TemplateGrid({ templates, onCreateBlank, onCreateFromTem
   return (
     <div style={{
       display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-      gap: 20,
+      gridTemplateColumns: 'repeat(auto-fill, minmax(224px, 1fr))',
+      gap: 16,
       padding: '24px',
     }}>
       {templates.map(t => (

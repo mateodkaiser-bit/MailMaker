@@ -22,11 +22,12 @@ export default function BlockActionBar({ editor }) {
         position: 'fixed',
         top: coords.top - 40,
         left: coords.left,
-        background: 'var(--color-ink)',
-        borderRadius: 'var(--radius-md)',
-        display: 'flex', gap: 2, padding: 4,
+        background: 'var(--color-shell)',
+        border: '1.5px solid #000',
+        borderRadius: 0,
+        display: 'flex', gap: 0, padding: 0,
         zIndex: 200,
-        boxShadow: 'var(--shadow-md)',
+        boxShadow: 'none',
       }}
     >
       <button
@@ -34,11 +35,11 @@ export default function BlockActionBar({ editor }) {
         title="Delete block"
         style={{
           background: 'none', border: 'none', cursor: 'pointer',
-          color: 'var(--color-white)', padding: '4px 8px',
-          borderRadius: 'var(--radius-sm)',
+          color: 'var(--color-white)', padding: '5px 8px',
+          borderRadius: 0,
           display: 'flex', alignItems: 'center',
         }}
-        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}
         onMouseLeave={e => e.currentTarget.style.background = 'none'}
       >
         <Icon name="delete" size={15} style={{ color: 'inherit' }} />

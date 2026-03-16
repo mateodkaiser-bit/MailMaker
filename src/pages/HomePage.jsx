@@ -40,16 +40,19 @@ export default function HomePage() {
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '0 20px',
-          borderBottom: '1px solid var(--color-border)',
+          borderBottom: '1.5px solid #000',
           background: 'var(--color-white)',
           flexShrink: 0,
           gap: 12,
         }}>
+          {/* Page title — uppercase label style */}
           <h1 style={{
             margin: 0,
-            fontSize: 'var(--text-base)',
-            fontWeight: 600,
-            color: 'var(--color-ink)',
+            fontSize: 10,
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.06em',
+            color: 'var(--color-muted)',
           }}>
             Templates
           </h1>
@@ -59,23 +62,23 @@ export default function HomePage() {
             <div style={{ position: 'relative' }}>
               <Icon
                 name="search"
-                size={15}
+                size={14}
                 style={{
-                  position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)',
+                  position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)',
                   color: 'var(--color-muted)', pointerEvents: 'none',
                 }}
               />
               <input
                 type="search"
-                placeholder="Search templates…"
+                placeholder="Search…"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 style={{
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius-md)',
-                  padding: '6px 12px 6px 30px',
+                  border: '1.5px solid var(--color-surface-mid)',
+                  borderRadius: 0,
+                  padding: '6px 12px 6px 28px',
                   fontSize: 'var(--text-sm)',
-                  width: 200,
+                  width: 180,
                   outline: 'none',
                   background: 'var(--color-ghost)',
                   color: 'var(--color-ink)',
@@ -83,45 +86,46 @@ export default function HomePage() {
               />
             </div>
 
+            {/* Secondary button */}
             <button
               onClick={() => setStarterOpen(true)}
               style={{
                 padding: '6px 14px',
                 background: 'transparent',
                 color: 'var(--color-slate)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-md)',
+                border: '1.5px solid var(--color-surface-mid)',
+                borderRadius: 0,
                 fontWeight: 500, fontSize: 'var(--text-sm)', cursor: 'pointer',
-                transition: 'all 0.12s',
               }}
               onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-ghost)'; e.currentTarget.style.color = 'var(--color-ink)'; }}
               onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--color-slate)'; }}
             >
-              Starter templates
+              Starters
             </button>
 
+            {/* Primary — Safety Orange */}
             <button
               onClick={handleCreateBlank}
               style={{
                 padding: '6px 14px',
-                background: 'var(--color-ink)',
-                color: 'var(--color-white)',
-                border: 'none',
-                borderRadius: 'var(--radius-md)',
-                fontWeight: 600, fontSize: 'var(--text-sm)', cursor: 'pointer',
+                background: 'var(--color-punch)',
+                color: '#fff',
+                border: '1.5px solid var(--color-punch)',
+                borderRadius: 0,
+                fontWeight: 700, fontSize: 'var(--text-sm)', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', gap: 6,
-                transition: 'opacity 0.12s',
+                textTransform: 'uppercase', letterSpacing: '0.04em',
               }}
-              onMouseEnter={e => e.currentTarget.style.opacity = '0.82'}
-              onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+              onMouseEnter={e => e.currentTarget.style.background = 'var(--color-punch-hover)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'var(--color-punch)'}
             >
-              <Icon name="add" size={16} style={{ color: 'inherit' }} />
-              New template
+              <Icon name="add" size={15} style={{ color: 'inherit' }} />
+              New
             </button>
           </div>
         </div>
 
-        {/* Content */}
+        {/* Grid content area */}
         <div className="dot-grid" style={{ flex: 1, overflowY: 'auto' }}>
           <TemplateGrid
             templates={filtered}
@@ -137,38 +141,38 @@ export default function HomePage() {
       <Modal
         open={starterOpen}
         onClose={() => setStarterOpen(false)}
-        title="Choose a starter template"
+        title="Choose a starter"
       >
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
           {STARTER_TEMPLATES.map(starter => (
             <button
               key={starter.name}
               onClick={() => handlePickStarter(starter)}
               style={{
                 background: 'var(--color-white)',
-                border: '1.5px solid var(--color-border)',
-                borderRadius: 'var(--radius-lg)',
-                padding: '18px 16px',
+                border: '1.5px solid var(--color-surface-mid)',
+                borderRadius: 0,
+                padding: '16px',
                 cursor: 'pointer',
                 textAlign: 'left',
-                transition: 'border-color 0.12s, box-shadow 0.12s',
+                transition: 'border-color 0.1s',
               }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-ink)'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.boxShadow = 'none'; }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--color-punch)'}
+              onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--color-surface-mid)'}
             >
               <div style={{
                 width: 32, height: 32,
-                background: 'var(--color-ghost)',
-                borderRadius: 'var(--radius-md)',
+                background: 'var(--color-shell)',
+                borderRadius: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 marginBottom: 10,
               }}>
-                <Icon name={starter.icon} size={17} style={{ color: 'var(--color-slate)' }} />
+                <Icon name={starter.icon} size={17} style={{ color: 'var(--color-hover-light)' }} />
               </div>
               <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)', color: 'var(--color-ink)' }}>
                 {starter.name}
               </div>
-              <div style={{ color: 'var(--color-muted)', fontSize: 'var(--text-xs)', marginTop: 3, lineHeight: 1.5 }}>
+              <div style={{ color: 'var(--color-muted)', fontSize: 'var(--text-xs)', marginTop: 4, lineHeight: 1.5 }}>
                 {starter.description}
               </div>
             </button>

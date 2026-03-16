@@ -9,16 +9,23 @@ const FONT_OPTIONS = [
   'Times New Roman, serif',
 ];
 
+// Shared uppercase section label style
+const sectionTitle = {
+  fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
+  letterSpacing: '0.06em', color: 'var(--color-muted)',
+  padding: '16px 16px 10px',
+  borderBottom: '1px solid var(--color-ghost)',
+  margin: 0,
+};
+
 export default function GlobalStylePanel({ theme, onChange }) {
   if (!theme) return null;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: 16 }}>
-      <h3 style={{ margin: 0, fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--color-slate)' }}>
-        GLOBAL STYLES
-      </h3>
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <div style={sectionTitle}>Global Styles</div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: 16 }}>
         <NumberInput
           label="Max width"
           value={theme.maxWidth}
@@ -34,7 +41,7 @@ export default function GlobalStylePanel({ theme, onChange }) {
         />
 
         <div>
-          <label style={{ display: 'block', fontSize: 'var(--text-sm)', color: 'var(--color-slate)', marginBottom: 6 }}>
+          <label style={{ display: 'block', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-muted)', marginBottom: 6 }}>
             Font family
           </label>
           <select
@@ -42,10 +49,11 @@ export default function GlobalStylePanel({ theme, onChange }) {
             onChange={e => onChange({ fontFamily: e.target.value })}
             style={{
               width: '100%', padding: '6px 8px',
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-sm)',
+              border: '1.5px solid var(--color-surface-mid)',
+              borderRadius: 0,
               fontSize: 'var(--text-sm)',
               background: 'var(--color-white)',
+              outline: 'none',
             }}
           >
             {FONT_OPTIONS.map(f => (
