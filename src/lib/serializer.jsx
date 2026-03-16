@@ -3,6 +3,7 @@ import {
   Html, Head, Body, Container, Font,
   Text, Img, Button, Hr, Section, Column, Row, Link,
 } from '@react-email/components';
+import { getFontByName, extractFontName, getGoogleFontsUrl } from './fonts.js';
 
 /**
  * Convert a TipTap document JSON + theme into a React Email element tree.
@@ -15,12 +16,37 @@ import {
 export function buildEmailTree(doc, theme = {}, sharedBlocks = []) {
   const children = buildNodes(doc?.content, theme, sharedBlocks);
 
+  // ── Font resolution ──────────────────────────────────────────────────────
+  // theme.fontName     set by FontPicker (preferred)
+  // theme.fontFamily   legacy CSS stack string — extract primary name from it
+  const fontName = theme.fontName ?? extractFontName(theme.fontFamily ?? '');
+  const fontObj  = getFontByName(fontName);
+
+  // Primary name for the react-email <Font> component (no quotes, no fallbacks)
+  const primaryName = fontObj?.name ?? fontName ?? 'Inter';
+
+  // Serif fonts fall back to Georgia; everything else falls back to Arial
+  const isSerif  = fontObj?.category === 'google-serif' || fontObj?.category === 'web-safe-serif';
+  const fallback = isSerif ? 'Georgia' : 'Arial';
+
+  // Google Fonts: emit an @import so Gmail webmail + Apple Mail can load it
+  const googleFontsUrl = getGoogleFontsUrl(primaryName);
+
   return (
     <Html>
       <Head>
+        {/*
+          @import must appear as the very first rule in a <style> block.
+          Most email clients ignore it, but Gmail (webmail), Apple Mail,
+          and Outlook.com will honour it — giving a best-effort web font.
+          The <Font> element below is the Outlook-safe fallback declaration.
+        */}
+        {googleFontsUrl && (
+          <style>{`@import url('${googleFontsUrl}');`}</style>
+        )}
         <Font
-          fontFamily={theme.fontFamily || 'Inter'}
-          fallbackFontFamily="Arial"
+          fontFamily={primaryName}
+          fallbackFontFamily={fallback}
           fontWeight={400}
           fontStyle="normal"
         />

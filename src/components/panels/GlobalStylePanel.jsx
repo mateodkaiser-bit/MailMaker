@@ -1,13 +1,8 @@
+import { useEffect } from 'react';
 import ColorPicker from '../ui/ColorPicker.jsx';
 import NumberInput from '../ui/NumberInput.jsx';
-
-const FONT_OPTIONS = [
-  'Inter, sans-serif',
-  'Georgia, serif',
-  'Arial, sans-serif',
-  'Helvetica Neue, sans-serif',
-  'Times New Roman, serif',
-];
+import FontPicker  from '../ui/FontPicker.jsx';
+import { extractFontName, ensureFontLoaded } from '../../lib/fonts.js';
 
 // Shared uppercase section label style
 const sectionTitle = {
@@ -20,6 +15,17 @@ const sectionTitle = {
 
 export default function GlobalStylePanel({ theme, onChange }) {
   if (!theme) return null;
+
+  // Derive the font's display name from whichever field is available.
+  // theme.fontName  — set by FontPicker (new)
+  // theme.fontFamily — legacy CSS string, e.g. "Inter, Helvetica, …"
+  const fontName = theme.fontName ?? extractFontName(theme.fontFamily ?? '');
+
+  // Keep the canvas preview in sync: re-inject the Google Fonts <link>
+  // whenever the selected font changes (e.g. after loading a saved template).
+  useEffect(() => {
+    if (fontName) ensureFontLoaded(fontName);
+  }, [fontName]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -40,27 +46,21 @@ export default function GlobalStylePanel({ theme, onChange }) {
           onChange={v => onChange({ backgroundColor: v })}
         />
 
-        <div>
-          <label style={{ display: 'block', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-muted)', marginBottom: 6 }}>
-            Font family
-          </label>
-          <select
-            value={theme.fontFamily}
-            onChange={e => onChange({ fontFamily: e.target.value })}
-            style={{
-              width: '100%', padding: '6px 8px',
-              border: '1.5px solid var(--color-surface-mid)',
-              borderRadius: 0,
-              fontSize: 'var(--text-sm)',
-              background: 'var(--color-white)',
-              outline: 'none',
-            }}
-          >
-            {FONT_OPTIONS.map(f => (
-              <option key={f} value={f}>{f.split(',')[0]}</option>
-            ))}
-          </select>
-        </div>
+        {/*
+          FontPicker returns the full font object so we can persist:
+            fontFamily — the Outlook-safe CSS stack, used by the canvas + email
+            fontName   — the display name, used to re-resolve the object later
+            fontIsCustom — so the serialiser knows to inject a Google Fonts link
+        */}
+        <FontPicker
+          label="Font family"
+          value={fontName}
+          onChange={font => onChange({
+            fontFamily:   font.fontStack,
+            fontName:     font.name,
+            fontIsCustom: font.isCustom,
+          })}
+        />
 
         <NumberInput
           label="Body font size"
