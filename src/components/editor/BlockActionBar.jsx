@@ -1,5 +1,5 @@
 // Floating toolbar that appears when a block node is selected
-import { useState } from 'react';
+import Icon from '../ui/Icon.jsx';
 
 const BLOCK_NODE_TYPES = ['blockImage', 'blockButton', 'blockDivider', 'blockSpacer', 'blockColumns', 'blockSocialIcons', 'sharedInstance'];
 
@@ -18,19 +18,15 @@ export default function BlockActionBar({ editor }) {
 
   function moveUp() {
     editor.chain().focus().run();
-    // Move block up by swapping with previous sibling
     const { $from } = editor.state.selection;
     const index = $from.index($from.depth - 1);
     if (index === 0) return;
     const parent = $from.node($from.depth - 1);
     const prevNode = parent.child(index - 1);
     const tr = editor.state.tr;
-    const start = $from.start($from.depth - 1);
     const nodeStart = $from.before($from.depth);
     const prevStart = nodeStart - prevNode.nodeSize;
-    tr.replaceWith(prevStart, nodeStart + node.nodeSize,
-      [node, prevNode]
-    );
+    tr.replaceWith(prevStart, nodeStart + node.nodeSize, [node, prevNode]);
     editor.view.dispatch(tr);
   }
 
@@ -42,11 +38,15 @@ export default function BlockActionBar({ editor }) {
     const nextNode = parent.child(index + 1);
     const tr = editor.state.tr;
     const nodeStart = $from.before($from.depth);
-    tr.replaceWith(nodeStart, nodeStart + node.nodeSize + nextNode.nodeSize,
-      [nextNode, node]
-    );
+    tr.replaceWith(nodeStart, nodeStart + node.nodeSize + nextNode.nodeSize, [nextNode, node]);
     editor.view.dispatch(tr);
   }
+
+  const actions = [
+    { icon: 'arrow_upward',   title: 'Move up',     action: moveUp },
+    { icon: 'arrow_downward', title: 'Move down',   action: moveDown },
+    { icon: 'delete',         title: 'Delete block', action: deleteBlock },
+  ];
 
   return (
     <div
@@ -61,11 +61,7 @@ export default function BlockActionBar({ editor }) {
         boxShadow: 'var(--shadow-md)',
       }}
     >
-      {[
-        { icon: '↑', title: 'Move up',     action: moveUp },
-        { icon: '↓', title: 'Move down',   action: moveDown },
-        { icon: '🗑', title: 'Delete block', action: deleteBlock },
-      ].map(({ icon, title, action }) => (
+      {actions.map(({ icon, title, action }) => (
         <button
           key={title}
           onMouseDown={e => { e.preventDefault(); action(); }}
@@ -74,12 +70,12 @@ export default function BlockActionBar({ editor }) {
             background: 'none', border: 'none', cursor: 'pointer',
             color: 'var(--color-white)', padding: '4px 8px',
             borderRadius: 'var(--radius-sm)',
-            fontSize: 13,
+            display: 'flex', alignItems: 'center',
           }}
           onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
           onMouseLeave={e => e.currentTarget.style.background = 'none'}
         >
-          {icon}
+          <Icon name={icon} size={15} style={{ color: 'inherit' }} />
         </button>
       ))}
     </div>

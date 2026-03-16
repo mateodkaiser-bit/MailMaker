@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSharedBlockStore } from '../../store/sharedBlocks.js';
 import { detachSharedBlock } from '../../lib/detachSharedBlock.js';
 import { useToast } from '../ui/Toast.jsx';
+import Icon from '../ui/Icon.jsx';
 
 export default function SharedBlockInfoPanel({ editor }) {
   const navigate = useNavigate();
@@ -18,23 +19,16 @@ export default function SharedBlockInfoPanel({ editor }) {
   const hasSnapshot = !!attrs.snapshot;
   const canDetach = !!(block || hasSnapshot);
 
-  function handleDetachClick() {
-    setConfirmOpen(true);
-  }
+  function handleDetachClick() { setConfirmOpen(true); }
 
   function handleConfirm() {
     setConfirmOpen(false);
     const ok = detachSharedBlock(editor, blocks);
-    if (ok) {
-      toast('Block detached — content is now editable', 'success');
-    } else {
-      toast('Could not detach block', 'danger');
-    }
+    if (ok) toast('Block detached — content is now editable', 'success');
+    else    toast('Could not detach block', 'danger');
   }
 
-  function handleCancel() {
-    setConfirmOpen(false);
-  }
+  function handleCancel() { setConfirmOpen(false); }
 
   return (
     <>
@@ -44,8 +38,8 @@ export default function SharedBlockInfoPanel({ editor }) {
         </h3>
 
         <div style={{
-          background: 'var(--color-amber-soft)',
-          border: '1px solid var(--color-amber-light)',
+          background: 'var(--color-accent-soft)',
+          border: '1px solid var(--color-accent-light)',
           borderRadius: 'var(--radius-md)',
           padding: '12px 14px',
         }}>
@@ -58,8 +52,10 @@ export default function SharedBlockInfoPanel({ editor }) {
           <div style={{
             background: 'var(--color-danger-bg)', color: 'var(--color-danger)',
             borderRadius: 'var(--radius-md)', padding: '10px 12px', fontSize: 'var(--text-xs)',
+            display: 'flex', alignItems: 'center', gap: 8,
           }}>
-            ⚠ Original block deleted — snapshot is being used
+            <Icon name="warning" size={14} style={{ color: 'var(--color-danger)', flexShrink: 0 }} />
+            Original block deleted — snapshot is being used
           </div>
         )}
 
@@ -67,12 +63,14 @@ export default function SharedBlockInfoPanel({ editor }) {
           onClick={() => navigate('/blocks')}
           style={{
             padding: '8px 14px',
-            background: 'transparent', color: 'var(--color-amber)',
-            border: '1px solid var(--color-amber)', borderRadius: 'var(--radius-md)',
+            background: 'transparent', color: 'var(--color-accent)',
+            border: '1px solid var(--color-accent)', borderRadius: 'var(--radius-md)',
             fontWeight: 600, fontSize: 'var(--text-sm)', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
           }}
         >
-          ↗ Edit in Blocks
+          <Icon name="open_in_new" size={15} style={{ color: 'inherit' }} />
+          Edit in Blocks
         </button>
 
         <button
@@ -87,13 +85,14 @@ export default function SharedBlockInfoPanel({ editor }) {
             fontWeight: 600, fontSize: 'var(--text-sm)',
             cursor: canDetach ? 'pointer' : 'default',
             opacity: canDetach ? 1 : 0.5,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
           }}
         >
-          ✂ Detach Block
+          <Icon name="content_cut" size={15} style={{ color: 'inherit' }} />
+          Detach Block
         </button>
       </div>
 
-      {/* Confirmation modal */}
       {confirmOpen && (
         <div
           onClick={handleCancel}
@@ -111,21 +110,18 @@ export default function SharedBlockInfoPanel({ editor }) {
               borderRadius: 'var(--radius-xl)',
               boxShadow: 'var(--shadow-md)',
               padding: 24,
-              maxWidth: 400,
-              width: '90%',
+              maxWidth: 400, width: '90%',
               display: 'flex', flexDirection: 'column', gap: 16,
             }}
           >
             <h3 style={{ margin: 0, fontSize: 'var(--text-md)', fontWeight: 700, color: 'var(--color-ink)' }}>
               Detach shared block?
             </h3>
-
             <p style={{ margin: 0, fontSize: 'var(--text-sm)', color: 'var(--color-slate)', lineHeight: 1.5 }}>
               {block
                 ? 'This will replace the shared block reference with an editable copy of its current content. Future changes to the original block will no longer affect this template.'
                 : 'The original shared block has been deleted. This will replace the reference with an editable copy of the saved snapshot.'}
             </p>
-
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <button
                 onClick={handleCancel}
@@ -142,7 +138,7 @@ export default function SharedBlockInfoPanel({ editor }) {
                 onClick={handleConfirm}
                 style={{
                   padding: '8px 16px',
-                  background: 'var(--color-amber)', color: 'var(--color-white)',
+                  background: 'var(--color-accent)', color: 'var(--color-white)',
                   border: 'none', borderRadius: 'var(--radius-md)',
                   fontWeight: 600, fontSize: 'var(--text-sm)', cursor: 'pointer',
                 }}

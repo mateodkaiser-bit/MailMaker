@@ -1,3 +1,5 @@
+import Icon from '../ui/Icon.jsx';
+
 export default function EmptyState({ onCreateBlank, onCreateFromTemplate }) {
   return (
     <div style={{
@@ -5,7 +7,7 @@ export default function EmptyState({ onCreateBlank, onCreateFromTemplate }) {
       alignItems: 'center', justifyContent: 'center',
       gap: 16, padding: 48,
     }}>
-      <div style={{ fontSize: 48, lineHeight: 1 }}>✉</div>
+      <Icon name="mail" size={48} style={{ color: 'var(--color-border)' }} />
       <h2 style={{ margin: 0, fontSize: 'var(--text-xl)', fontWeight: 700 }}>
         No templates yet
       </h2>
@@ -20,9 +22,11 @@ export default function EmptyState({ onCreateBlank, onCreateFromTemplate }) {
             background: 'var(--color-amber)', color: 'var(--color-white)',
             border: 'none', borderRadius: 'var(--radius-md)',
             fontWeight: 600, fontSize: 'var(--text-sm)', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 6,
           }}
         >
-          + Blank template
+          <Icon name="add" size={16} style={{ color: 'inherit' }} />
+          Blank template
         </button>
         <button
           onClick={onCreateFromTemplate}

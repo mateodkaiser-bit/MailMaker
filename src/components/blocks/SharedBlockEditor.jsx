@@ -8,6 +8,7 @@ import { useToast } from '../ui/Toast.jsx';
 import EditorCanvas from '../editor/EditorCanvas.jsx';
 import PreviewPane from '../editor/PreviewPane.jsx';
 import RightPanel from '../panels/RightPanel.jsx';
+import Icon from '../ui/Icon.jsx';
 
 export default function SharedBlockEditor() {
   const { id } = useParams();
@@ -18,9 +19,7 @@ export default function SharedBlockEditor() {
 
   const block = getBlock(id);
 
-  const [theme, setTheme] = useState(() => ({
-    ...settings?.defaultTheme,
-  }));
+  const [theme, setTheme] = useState(() => ({ ...settings?.defaultTheme }));
   const [doc, setDoc] = useState(block?.doc ?? null);
   const [isDirty, setIsDirty] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -53,11 +52,8 @@ export default function SharedBlockEditor() {
   }
 
   function commitRename() {
-    if (name.trim()) {
-      updateSharedBlock(id, { name: name.trim() });
-    } else {
-      setName(block.name);
-    }
+    if (name.trim()) updateSharedBlock(id, { name: name.trim() });
+    else setName(block.name);
     setEditingName(false);
   }
 
@@ -72,24 +68,23 @@ export default function SharedBlockEditor() {
         padding: '0 16px',
         borderBottom: '1px solid var(--color-border)',
         background: 'var(--color-white)',
-        gap: 12,
-        flexShrink: 0,
-        zIndex: 10,
+        gap: 12, flexShrink: 0, zIndex: 10,
       }}>
-        {/* Back */}
         <button
           onClick={() => navigate('/blocks')}
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
-            color: 'var(--color-muted)', fontSize: 18, padding: '4px 8px',
+            color: 'var(--color-muted)', padding: '6px',
             borderRadius: 'var(--radius-sm)',
+            display: 'flex', alignItems: 'center',
           }}
           title="Back to saved blocks"
+          onMouseEnter={e => e.currentTarget.style.background = 'var(--color-ghost)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'none'}
         >
-          ←
+          <Icon name="arrow_back" size={18} />
         </button>
 
-        {/* Block name */}
         {editingName ? (
           <input
             autoFocus
@@ -130,7 +125,6 @@ export default function SharedBlockEditor() {
 
         <div style={{ flex: 1 }} />
 
-        {/* Preview toggle */}
         <button
           onClick={() => setPreviewOpen(o => !o)}
           style={{
@@ -139,12 +133,13 @@ export default function SharedBlockEditor() {
             color: previewOpen ? 'var(--color-white)' : 'var(--color-slate)',
             border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)',
             fontWeight: 500, fontSize: 'var(--text-sm)', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 6,
           }}
         >
-          {previewOpen ? '✕ Preview' : '👁 Preview'}
+          <Icon name={previewOpen ? 'visibility_off' : 'visibility'} size={16} style={{ color: 'inherit' }} />
+          Preview
         </button>
 
-        {/* Save button */}
         <button
           onClick={handleSave}
           disabled={saving}
@@ -153,7 +148,8 @@ export default function SharedBlockEditor() {
             background: isDirty ? 'var(--color-amber)' : 'var(--color-ghost)',
             color: isDirty ? 'var(--color-white)' : 'var(--color-muted)',
             border: 'none', borderRadius: 'var(--radius-md)',
-            fontWeight: 600, fontSize: 'var(--text-sm)', cursor: isDirty ? 'pointer' : 'default',
+            fontWeight: 600, fontSize: 'var(--text-sm)',
+            cursor: isDirty ? 'pointer' : 'default',
             transition: 'background 0.15s',
           }}
         >
@@ -161,14 +157,12 @@ export default function SharedBlockEditor() {
         </button>
       </div>
 
-      {/* Body */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-          {previewOpen ? (
-            <PreviewPane html={previewHtml} error={error} />
-          ) : (
-            <EditorCanvas editor={editor} theme={theme} />
-          )}
+          {previewOpen
+            ? <PreviewPane html={previewHtml} error={error} />
+            : <EditorCanvas editor={editor} theme={theme} />
+          }
         </div>
         <RightPanel editor={editor} theme={theme} onThemeChange={handleThemeChange} />
       </div>

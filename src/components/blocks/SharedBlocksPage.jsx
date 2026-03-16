@@ -5,6 +5,7 @@ import { useTemplateStore } from '../../store/templates.js';
 import NavRail from '../ui/NavRail.jsx';
 import SharedBlockCard from './SharedBlockCard.jsx';
 import { useToast } from '../ui/Toast.jsx';
+import Icon from '../ui/Icon.jsx';
 
 export default function SharedBlocksPage() {
   const navigate = useNavigate();
@@ -61,15 +62,13 @@ export default function SharedBlocksPage() {
           display: 'flex', alignItems: 'center',
           padding: '0 32px',
           borderBottom: '1px solid var(--color-border)',
-          gap: 16,
-          flexShrink: 0,
+          gap: 16, flexShrink: 0,
           background: 'var(--color-white)',
         }}>
           <h1 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, color: 'var(--color-ink)', margin: 0 }}>
             Saved Blocks
           </h1>
 
-          {/* Search */}
           <input
             placeholder="Search blocks…"
             value={search}
@@ -92,16 +91,14 @@ export default function SharedBlocksPage() {
             onClick={handleNew}
             style={{
               padding: '8px 18px',
-              background: 'var(--color-amber)',
-              color: 'var(--color-white)',
-              border: 'none',
-              borderRadius: 'var(--radius-md)',
-              fontWeight: 600,
-              fontSize: 'var(--text-sm)',
-              cursor: 'pointer',
+              background: 'var(--color-accent)', color: 'var(--color-white)',
+              border: 'none', borderRadius: 'var(--radius-md)',
+              fontWeight: 600, fontSize: 'var(--text-sm)', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 6,
             }}
           >
-            + New saved block
+            <Icon name="add" size={16} style={{ color: 'inherit' }} />
+            New saved block
           </button>
         </div>
 
@@ -113,7 +110,7 @@ export default function SharedBlocksPage() {
               justifyContent: 'center', height: 300,
               color: 'var(--color-muted)', gap: 12,
             }}>
-              <div style={{ fontSize: 48 }}>⚡</div>
+              <Icon name="bolt" size={48} style={{ color: 'var(--color-border)' }} />
               <div style={{ fontWeight: 600, fontSize: 'var(--text-md)' }}>
                 {search ? 'No matching blocks' : 'No saved blocks yet'}
               </div>
@@ -126,17 +123,14 @@ export default function SharedBlocksPage() {
                 <button
                   onClick={handleNew}
                   style={{
-                    marginTop: 8,
-                    padding: '8px 20px',
-                    background: 'var(--color-amber)',
-                    color: 'var(--color-white)',
-                    border: 'none',
-                    borderRadius: 'var(--radius-md)',
-                    fontWeight: 600,
-                    fontSize: 'var(--text-sm)',
-                    cursor: 'pointer',
+                    marginTop: 8, padding: '8px 20px',
+                    background: 'var(--color-accent)', color: 'var(--color-white)',
+                    border: 'none', borderRadius: 'var(--radius-md)',
+                    fontWeight: 600, fontSize: 'var(--text-sm)', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: 6,
                   }}
                 >
+                  <Icon name="add" size={16} style={{ color: 'inherit' }} />
                   Create your first block
                 </button>
               )}

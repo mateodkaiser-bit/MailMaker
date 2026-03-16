@@ -26,9 +26,9 @@ export default function ColumnsStylePanel({ editor }) {
               onClick={() => update({ ratio: r.value })}
               style={{
                 padding: '8px 12px', textAlign: 'left',
-                background: attrs.ratio === r.value ? 'var(--color-amber-soft)' : 'var(--color-ghost)',
-                color: attrs.ratio === r.value ? 'var(--color-amber)' : 'var(--color-ink)',
-                border: `1px solid ${attrs.ratio === r.value ? 'var(--color-amber)' : 'var(--color-border)'}`,
+                background: attrs.ratio === r.value ? 'var(--color-accent-soft)' : 'var(--color-ghost)',
+                color: attrs.ratio === r.value ? 'var(--color-accent)' : 'var(--color-ink)',
+                border: `1px solid ${attrs.ratio === r.value ? 'var(--color-accent)' : 'var(--color-border)'}`,
                 borderRadius: 'var(--radius-sm)', cursor: 'pointer',
                 fontSize: 'var(--text-sm)', fontWeight: attrs.ratio === r.value ? 600 : 400,
               }}

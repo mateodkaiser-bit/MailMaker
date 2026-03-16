@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useClipboard } from '../../hooks/useClipboard.js';
+import Icon from '../ui/Icon.jsx';
 
 export default function EditorTopBar({ template, onRename, html, isCompiling, hasError, onPreviewToggle, previewOpen }) {
   const navigate = useNavigate();
@@ -24,6 +25,22 @@ export default function EditorTopBar({ template, onRename, html, isCompiling, ha
     setExportOpen(false);
   }
 
+  const exportItems = [
+    {
+      icon: copiedHtml ? 'check' : (hasError && html ? 'warning' : 'content_copy'),
+      label: copiedHtml ? 'Copied' : 'Copy HTML',
+      action: () => { copyHtml(html); },
+      disabled: isCompiling || !html,
+      title: isCompiling ? 'Compiling…' : (hasError ? 'Showing last valid output — email has errors' : undefined),
+      warn: !copiedHtml && hasError && !!html,
+    },
+    {
+      icon: 'download',
+      label: 'Download .html',
+      action: downloadHtml,
+    },
+  ];
+
   return (
     <div style={{
       height: 52,
@@ -40,12 +57,15 @@ export default function EditorTopBar({ template, onRename, html, isCompiling, ha
         onClick={() => navigate('/')}
         style={{
           background: 'none', border: 'none', cursor: 'pointer',
-          color: 'var(--color-muted)', fontSize: 18, padding: '4px 8px',
+          color: 'var(--color-muted)', padding: '6px',
           borderRadius: 'var(--radius-sm)',
+          display: 'flex', alignItems: 'center',
         }}
         title="Back to templates"
+        onMouseEnter={e => e.currentTarget.style.background = 'var(--color-ghost)'}
+        onMouseLeave={e => e.currentTarget.style.background = 'none'}
       >
-        ←
+        <Icon name="arrow_back" size={18} />
       </button>
 
       {/* Template name */}
@@ -58,9 +78,9 @@ export default function EditorTopBar({ template, onRename, html, isCompiling, ha
           onKeyDown={e => { if (e.key === 'Enter') commitRename(); if (e.key === 'Escape') setEditing(false); }}
           style={{
             fontSize: 'var(--text-base)', fontWeight: 600,
-            border: 'none', outline: '2px solid var(--color-amber)',
+            border: 'none', outline: '2px solid var(--color-accent)',
             borderRadius: 'var(--radius-sm)', padding: '3px 8px',
-            background: 'var(--color-amber-soft)',
+            background: 'var(--color-accent-soft)',
           }}
         />
       ) : (
@@ -89,9 +109,11 @@ export default function EditorTopBar({ template, onRename, html, isCompiling, ha
           color: previewOpen ? 'var(--color-white)' : 'var(--color-slate)',
           border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)',
           fontWeight: 500, fontSize: 'var(--text-sm)', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', gap: 6,
         }}
       >
-        {previewOpen ? '✕ Preview' : '👁 Preview'}
+        <Icon name={previewOpen ? 'visibility_off' : 'visibility'} size={16} style={{ color: 'inherit' }} />
+        Preview
       </button>
 
       {/* Export menu */}
@@ -100,13 +122,17 @@ export default function EditorTopBar({ template, onRename, html, isCompiling, ha
           onClick={() => setExportOpen(o => !o)}
           style={{
             padding: '6px 14px',
-            background: 'var(--color-amber)', color: 'var(--color-white)',
+            background: 'var(--color-accent)', color: 'var(--color-white)',
             border: 'none', borderRadius: 'var(--radius-md)',
             fontWeight: 600, fontSize: 'var(--text-sm)', cursor: 'pointer',
             display: 'flex', alignItems: 'center', gap: 6,
+            transition: 'background 0.15s',
           }}
+          onMouseEnter={e => e.currentTarget.style.background = 'var(--color-accent-hover)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'var(--color-accent)'}
         >
-          Export ▾
+          Export
+          <Icon name="expand_more" size={16} style={{ color: 'inherit' }} />
         </button>
 
         {exportOpen && (
@@ -120,32 +146,30 @@ export default function EditorTopBar({ template, onRename, html, isCompiling, ha
             minWidth: 200,
             overflow: 'hidden',
           }}>
-            {[
-              {
-                label: copiedHtml ? '✓ Copied HTML' : (hasError && html ? '⚠ Copy HTML' : 'Copy HTML'),
-                action: () => { copyHtml(html); },
-                disabled: isCompiling || !html,
-                title: isCompiling ? 'Compiling…' : (hasError ? 'Showing last valid output — email has errors' : undefined),
-              },
-              { label: '⬇ Download .html', action: downloadHtml },
-            ].map(({ label, action, disabled, title }) => (
+            {exportItems.map(({ icon, label, action, disabled, title, warn }) => (
               <button
                 key={label}
                 onClick={() => { if (!disabled) { action(); setExportOpen(false); } }}
                 disabled={disabled}
                 title={title}
                 style={{
-                  display: 'block', width: '100%', textAlign: 'left',
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  width: '100%', textAlign: 'left',
                   padding: '10px 16px',
                   background: 'none', border: 'none',
                   cursor: disabled ? 'default' : 'pointer',
                   fontSize: 'var(--text-sm)',
-                  color: disabled ? 'var(--color-muted)' : 'var(--color-ink)',
+                  color: disabled ? 'var(--color-muted)' : warn ? 'var(--color-danger)' : 'var(--color-ink)',
                   opacity: disabled ? 0.6 : 1,
                 }}
                 onMouseEnter={e => { if (!disabled) e.currentTarget.style.background = 'var(--color-ghost)'; }}
                 onMouseLeave={e => e.currentTarget.style.background = 'none'}
               >
+                <Icon
+                  name={icon}
+                  size={15}
+                  style={{ color: warn ? 'var(--color-danger)' : 'var(--color-muted)', flexShrink: 0 }}
+                />
                 {label}
               </button>
             ))}

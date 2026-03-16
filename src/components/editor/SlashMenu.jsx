@@ -2,16 +2,16 @@ import { useEffect, useRef, useState } from 'react';
 import { SLASH_MENU_KEY } from '../../extensions/SlashCommand.js';
 
 const COMMANDS = [
-  { label: 'Paragraph',     icon: '¶', type: 'paragraph' },
-  { label: 'Heading 1',     icon: 'H1', type: 'heading', attrs: { level: 1 } },
-  { label: 'Heading 2',     icon: 'H2', type: 'heading', attrs: { level: 2 } },
-  { label: 'Heading 3',     icon: 'H3', type: 'heading', attrs: { level: 3 } },
-  { label: 'Image',         icon: '🖼', type: 'blockImage' },
-  { label: 'Button',        icon: '🔲', type: 'blockButton' },
-  { label: 'Divider',       icon: '─', type: 'blockDivider' },
-  { label: 'Spacer',        icon: '↕', type: 'blockSpacer' },
-  { label: 'Two Columns',   icon: '⊟', type: 'blockColumns' },
-  { label: 'Social Icons',  icon: '⊕', type: 'blockSocialIcons' },
+  { label: 'Paragraph',    icon: 'notes',           type: 'paragraph' },
+  { label: 'Heading 1',    icon: 'format_h1',        type: 'heading', attrs: { level: 1 } },
+  { label: 'Heading 2',    icon: 'format_h2',        type: 'heading', attrs: { level: 2 } },
+  { label: 'Heading 3',    icon: 'format_h3',        type: 'heading', attrs: { level: 3 } },
+  { label: 'Image',        icon: 'image',            type: 'blockImage' },
+  { label: 'Button',       icon: 'smart_button',     type: 'blockButton' },
+  { label: 'Divider',      icon: 'horizontal_rule',  type: 'blockDivider' },
+  { label: 'Spacer',       icon: 'height',           type: 'blockSpacer' },
+  { label: 'Two Columns',  icon: 'view_column',      type: 'blockColumns' },
+  { label: 'Social Icons', icon: 'hub',              type: 'blockSocialIcons' },
 ];
 
 export default function SlashMenu({ editor }) {
@@ -77,7 +77,6 @@ export default function SlashMenu({ editor }) {
 
   if (!state.active || filtered.length === 0) return null;
 
-  // Position near cursor
   const coords = editor.view.coordsAtPos(state.range?.from ?? 0);
 
   return (
@@ -113,7 +112,16 @@ export default function SlashMenu({ editor }) {
           }}
           onMouseEnter={() => setSelectedIndex(i)}
         >
-          <span style={{ width: 20, textAlign: 'center', fontSize: 13, fontWeight: 700, color: 'var(--color-muted)' }}>
+          <span
+            className="material-symbols-rounded"
+            style={{
+              fontSize: 16,
+              width: 20,
+              textAlign: 'center',
+              color: 'var(--color-muted)',
+              fontVariationSettings: "'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 16",
+            }}
+          >
             {cmd.icon}
           </span>
           {cmd.label}

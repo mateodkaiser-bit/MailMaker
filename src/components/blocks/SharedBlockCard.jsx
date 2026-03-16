@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Icon from '../ui/Icon.jsx';
 
 const menuItemBase = {
-  display: 'block', width: '100%', textAlign: 'left',
+  display: 'flex', alignItems: 'center', gap: 8,
+  width: '100%', textAlign: 'left',
   padding: '9px 14px', background: 'none', border: 'none',
   cursor: 'pointer', fontSize: 'var(--text-sm)',
 };
@@ -27,12 +29,16 @@ export default function SharedBlockCard({ block, usageCount, onDelete, onRename,
   }
 
   const menuItems = [
-    { label: 'Rename', action: () => { setRenaming(true); setMenuOpen(false); } },
-    { label: 'Duplicate', action: () => { onDuplicate(block.id); setMenuOpen(false); } },
+    { label: 'Rename',    icon: 'edit',      action: () => { setRenaming(true); setMenuOpen(false); } },
+    { label: 'Duplicate', icon: 'content_copy', action: () => { onDuplicate(block.id); setMenuOpen(false); } },
     { type: 'divider' },
     confirmDelete
-      ? { label: usageCount > 0 ? `⚠ Delete anyway (used in ${usageCount})` : '⚠ Confirm delete', danger: true, bold: true, action: () => { onDelete(block.id); setMenuOpen(false); } }
-      : { label: 'Delete', danger: true, action: handleDelete },
+      ? {
+          label: usageCount > 0 ? `Delete anyway (used in ${usageCount})` : 'Confirm delete',
+          icon: 'warning', danger: true, bold: true,
+          action: () => { onDelete(block.id); setMenuOpen(false); },
+        }
+      : { label: 'Delete', icon: 'delete', danger: true, action: handleDelete },
   ];
 
   return (
@@ -74,7 +80,7 @@ export default function SharedBlockCard({ block, usageCount, onDelete, onRename,
               if (e.key === 'Enter') commitRename();
               if (e.key === 'Escape') { setRenaming(false); setNameVal(block.name); }
             }}
-            style={{ flex: 1, fontSize: 'var(--text-sm)', fontWeight: 600, border: 'none', outline: '2px solid var(--color-amber)', borderRadius: 'var(--radius-sm)', padding: '2px 6px', background: 'var(--color-amber-soft)', color: 'var(--color-ink)' }}
+            style={{ flex: 1, fontSize: 'var(--text-sm)', fontWeight: 600, border: 'none', outline: '2px solid var(--color-accent)', borderRadius: 'var(--radius-sm)', padding: '2px 6px', background: 'var(--color-accent-soft)', color: 'var(--color-ink)' }}
           />
         ) : (
           <div style={{ flex: 1, overflow: 'hidden' }}>
@@ -91,16 +97,28 @@ export default function SharedBlockCard({ block, usageCount, onDelete, onRename,
         <div style={{ position: 'relative' }}>
           <button
             onClick={e => { e.stopPropagation(); setMenuOpen(o => !o); setConfirmDelete(false); }}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-muted)', fontSize: 16, padding: '4px 6px', borderRadius: 'var(--radius-sm)', lineHeight: 1 }}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: 'var(--color-muted)', padding: '4px 6px',
+              borderRadius: 'var(--radius-sm)', lineHeight: 1,
+              display: 'flex', alignItems: 'center',
+            }}
             title="More options"
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--color-ghost)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'none'}
           >
-            ···
+            <Icon name="more_horiz" size={18} />
           </button>
 
           {menuOpen && (
             <div
               onClick={e => e.stopPropagation()}
-              style={{ position: 'absolute', right: 0, bottom: '100%', marginBottom: 4, background: 'var(--color-white)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-md)', zIndex: 50, minWidth: 160, overflow: 'hidden' }}
+              style={{
+                position: 'absolute', right: 0, bottom: '100%', marginBottom: 4,
+                background: 'var(--color-white)', border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-md)',
+                zIndex: 50, minWidth: 160, overflow: 'hidden',
+              }}
             >
               {menuItems.map((item, i) =>
                 item.type === 'divider'
@@ -109,10 +127,19 @@ export default function SharedBlockCard({ block, usageCount, onDelete, onRename,
                     <button
                       key={item.label}
                       onClick={item.action}
-                      style={{ ...menuItemBase, color: item.danger ? 'var(--color-error)' : 'var(--color-ink)', fontWeight: item.bold ? 700 : 400 }}
+                      style={{
+                        ...menuItemBase,
+                        color: item.danger ? 'var(--color-danger)' : 'var(--color-ink)',
+                        fontWeight: item.bold ? 700 : 400,
+                      }}
                       onMouseEnter={e => e.currentTarget.style.background = 'var(--color-ghost)'}
                       onMouseLeave={e => e.currentTarget.style.background = 'none'}
                     >
+                      <Icon
+                        name={item.icon}
+                        size={14}
+                        style={{ color: item.danger ? 'var(--color-danger)' : 'var(--color-muted)', flexShrink: 0 }}
+                      />
                       {item.label}
                     </button>
                   )

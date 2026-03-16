@@ -25,7 +25,7 @@ export default function EditorCanvas({ editor, theme }) {
       style={{
         flex: 1,
         overflowY: 'auto',
-        background: 'var(--color-border)',
+        background: 'var(--color-preview-bg)',
         display: 'flex',
         justifyContent: 'center',
         padding: '40px 24px',

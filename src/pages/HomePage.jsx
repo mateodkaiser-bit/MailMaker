@@ -73,10 +73,13 @@ export default function HomePage() {
             onClick={handleCreateBlank}
             style={{
               padding: '8px 16px',
-              background: 'var(--color-amber)', color: 'var(--color-white)',
+              background: 'var(--color-accent)', color: 'var(--color-white)',
               border: 'none', borderRadius: 'var(--radius-md)',
               fontWeight: 600, fontSize: 'var(--text-sm)', cursor: 'pointer',
+              transition: 'background 0.15s',
             }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--color-accent-hover)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'var(--color-accent)'}
           >
             + New template
           </button>
@@ -114,7 +117,7 @@ export default function HomePage() {
                 textAlign: 'left',
                 transition: 'border-color 0.15s',
               }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--color-amber)'}
+              onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--color-accent)'}
               onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--color-border)'}
             >
               <div style={{ fontSize: 24, marginBottom: 8 }}>{starter.icon}</div>

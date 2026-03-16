@@ -1,14 +1,16 @@
 // Panel shown when a text/heading node is selected
+import Icon from '../ui/Icon.jsx';
+
 export default function TextStylePanel({ editor }) {
   if (!editor) return null;
 
   const active = {
-    bold:   editor.isActive('bold'),
-    italic: editor.isActive('italic'),
-    underline: editor.isActive('underline'),
-    h1: editor.isActive('heading', { level: 1 }),
-    h2: editor.isActive('heading', { level: 2 }),
-    h3: editor.isActive('heading', { level: 3 }),
+    bold:        editor.isActive('bold'),
+    italic:      editor.isActive('italic'),
+    underline:   editor.isActive('underline'),
+    h1:          editor.isActive('heading', { level: 1 }),
+    h2:          editor.isActive('heading', { level: 2 }),
+    h3:          editor.isActive('heading', { level: 3 }),
     alignLeft:   editor.isActive({ textAlign: 'left' }),
     alignCenter: editor.isActive({ textAlign: 'center' }),
     alignRight:  editor.isActive({ textAlign: 'right' }),
@@ -22,6 +24,7 @@ export default function TextStylePanel({ editor }) {
     borderRadius: 'var(--radius-sm)',
     fontWeight: on ? 700 : 400,
     cursor: 'pointer', fontSize: 13,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
   });
 
   return (
@@ -35,7 +38,7 @@ export default function TextStylePanel({ editor }) {
         <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-muted)', marginBottom: 6 }}>Level</div>
         <div style={{ display: 'flex', gap: 4 }}>
           {[
-            { label: 'P',  action: () => editor.chain().focus().setParagraph().run(), on: !active.h1 && !active.h2 && !active.h3 },
+            { label: 'P',  action: () => editor.chain().focus().setParagraph().run(),            on: !active.h1 && !active.h2 && !active.h3 },
             { label: 'H1', action: () => editor.chain().focus().setHeading({ level: 1 }).run(), on: active.h1 },
             { label: 'H2', action: () => editor.chain().focus().setHeading({ level: 2 }).run(), on: active.h2 },
             { label: 'H3', action: () => editor.chain().focus().setHeading({ level: 3 }).run(), on: active.h3 },
@@ -50,10 +53,10 @@ export default function TextStylePanel({ editor }) {
         <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-muted)', marginBottom: 6 }}>Format</div>
         <div style={{ display: 'flex', gap: 4 }}>
           {[
-            { label: 'B',  action: () => editor.chain().focus().toggleBold().run(),      on: active.bold,      style: { fontWeight: 700 } },
-            { label: 'I',  action: () => editor.chain().focus().toggleItalic().run(),    on: active.italic,    style: { fontStyle: 'italic' } },
-            { label: 'U',  action: () => editor.chain().focus().toggleUnderline().run(), on: active.underline, style: { textDecoration: 'underline' } },
-          ].map(({ label, action, on, style: extra }) => (
+            { label: 'B', action: () => editor.chain().focus().toggleBold().run(),      on: active.bold,      extra: { fontWeight: 700 } },
+            { label: 'I', action: () => editor.chain().focus().toggleItalic().run(),    on: active.italic,    extra: { fontStyle: 'italic' } },
+            { label: 'U', action: () => editor.chain().focus().toggleUnderline().run(), on: active.underline, extra: { textDecoration: 'underline' } },
+          ].map(({ label, action, on, extra }) => (
             <button key={label} onClick={action} style={{ ...btnStyle(on), ...extra }}>{label}</button>
           ))}
         </div>
@@ -64,16 +67,17 @@ export default function TextStylePanel({ editor }) {
         <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-muted)', marginBottom: 6 }}>Align</div>
         <div style={{ display: 'flex', gap: 4 }}>
           {[
-            { label: '⬛ Left',   value: 'left',   on: active.alignLeft },
-            { label: '▪ Center', value: 'center', on: active.alignCenter },
-            { label: '⬛ Right',  value: 'right',  on: active.alignRight },
-          ].map(({ label, value, on }) => (
+            { icon: 'format_align_left',   value: 'left',   title: 'Align left',   on: active.alignLeft },
+            { icon: 'format_align_center', value: 'center', title: 'Align center', on: active.alignCenter },
+            { icon: 'format_align_right',  value: 'right',  title: 'Align right',  on: active.alignRight },
+          ].map(({ icon, value, title, on }) => (
             <button
               key={value}
               onClick={() => editor.chain().focus().setTextAlign(value).run()}
+              title={title}
               style={btnStyle(on)}
             >
-              {label}
+              <Icon name={icon} size={14} style={{ color: 'inherit' }} />
             </button>
           ))}
         </div>

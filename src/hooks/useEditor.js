@@ -16,6 +16,7 @@ import { BlockColumns, BlockColumn } from '../extensions/BlockColumns.js';
 import { BlockSocialIcons } from '../extensions/BlockSocialIcons.js';
 import { BlockSharedInstance } from '../extensions/BlockSharedInstance.js';
 import { SlashCommand } from '../extensions/SlashCommand.js';
+import { DragHandle } from '../extensions/DragHandle.js';
 
 export function useEditor({ content, onUpdate, placeholder = 'Type / to insert a block…' }) {
   const editor = useTipTapEditor({
@@ -38,6 +39,7 @@ export function useEditor({ content, onUpdate, placeholder = 'Type / to insert a
       BlockSocialIcons,
       BlockSharedInstance,
       SlashCommand,
+      DragHandle,
     ],
     content,
     onUpdate: ({ editor }) => {
