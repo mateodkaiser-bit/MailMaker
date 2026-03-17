@@ -8,10 +8,10 @@ export default function BlockColumnsView({ node }) {
   return (
     <NodeViewWrapper data-type="blockColumns">
       <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
-        <div style={{ width: `${l}%` }} data-type="blockColumn">
+        <div style={{ width: `${l}%`, minWidth: 0, overflow: 'hidden', wordBreak: 'break-word' }} data-type="blockColumn">
           <NodeViewContent />
         </div>
-        <div style={{ width: `${r}%` }} data-type="blockColumn">
+        <div style={{ width: `${r}%`, minWidth: 0, overflow: 'hidden', wordBreak: 'break-word' }} data-type="blockColumn">
           <NodeViewContent />
         </div>
       </div>
