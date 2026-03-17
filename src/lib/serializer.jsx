@@ -26,7 +26,7 @@ export function buildEmailTree(doc, theme = {}, sharedBlocks = []) {
         />
       </Head>
       <Body style={{ backgroundColor: theme.backgroundColor || '#ffffff', margin: 0, padding: 0 }}>
-        <Container style={{ maxWidth: theme.maxWidth || '600px', margin: '0 auto' }}>
+        <Container style={{ maxWidth: theme.maxWidth || '600px', margin: '0 auto', padding: '32px 24px' }}>
           {children}
         </Container>
       </Body>
@@ -67,7 +67,7 @@ function buildParagraph(node, theme, key) {
   return (
     <Text
       key={key}
-      style={{ textAlign: align, color, fontSize, lineHeight: '1.6', margin: '0 0 8px 0' }}
+      style={{ textAlign: align, color, fontSize, lineHeight: '1.6', margin: '0 0 12px 0' }}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );
@@ -84,14 +84,14 @@ function buildHeading(node, key) {
   return (
     <Text
       key={key}
-      style={{ fontSize, fontWeight, lineHeight: '1.3', margin: '0 0 12px 0' }}
+      style={{ fontSize, fontWeight, lineHeight: '1.3', margin: '0 0 16px 0' }}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );
 }
 
 function buildImage(node, key) {
-  const { src = '', alt = '', width = '100%', align = 'center', href } = node.attrs || {};
+  const { src = '', alt = '', width = '100%', align = 'center', href, borderRadius = 0 } = node.attrs || {};
   const w = typeof width === 'number' ? `${width}px` : width;
   const marginStyle = align === 'center'
     ? '0 auto'
@@ -103,14 +103,21 @@ function buildImage(node, key) {
       src={src}
       alt={alt}
       width={w}
-      style={{ display: 'block', margin: marginStyle }}
+      style={{
+        display: 'block',
+        margin: marginStyle,
+        ...(borderRadius ? { borderRadius: `${borderRadius}px` } : {}),
+      }}
     />
   );
 
-  if (href) {
-    return <Link key={key} href={href}>{img}</Link>;
-  }
-  return img;
+  const content = href ? <Link key={undefined} href={href}>{img}</Link> : img;
+
+  return (
+    <Section key={key} style={{ paddingBottom: '12px' }}>
+      {content}
+    </Section>
+  );
 }
 
 function buildButton(node, key) {
@@ -130,22 +137,23 @@ function buildButton(node, key) {
   } = node.attrs || {};
 
   return (
-    <Button
-      key={key}
-      href={href}
-      style={{
-        backgroundColor,
-        color,
-        borderRadius: `${borderRadius}px`,
-        padding: `${paddingTop}px ${paddingRight}px ${paddingBottom}px ${paddingLeft}px`,
-        fontSize: `${fontSize}px`,
-        fontWeight,
-        textAlign: align,
-        display: 'block',
-      }}
-    >
-      {label}
-    </Button>
+    <Section key={key} style={{ paddingBottom: '12px', textAlign: align }}>
+      <Button
+        href={href}
+        style={{
+          backgroundColor,
+          color,
+          borderRadius: `${borderRadius}px`,
+          padding: `${paddingTop}px ${paddingRight}px ${paddingBottom}px ${paddingLeft}px`,
+          fontSize: `${fontSize}px`,
+          fontWeight,
+          textAlign: align,
+          display: 'inline-block',
+        }}
+      >
+        {label}
+      </Button>
+    </Section>
   );
 }
 

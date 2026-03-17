@@ -223,6 +223,22 @@ export default function ImageStylePanel({ editor }) {
         </div>
       </div>
 
+      {/* ── Corner radius ── */}
+      <div>
+        {label('Corner radius')}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <input
+            type="range" min={0} max={24} step={1}
+            value={attrs.borderRadius || 0}
+            onChange={e => update({ borderRadius: Number(e.target.value) })}
+            style={{ flex: 1 }}
+          />
+          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-muted)', minWidth: 28 }}>
+            {attrs.borderRadius || 0}px
+          </span>
+        </div>
+      </div>
+
       {/* ── Link URL ── */}
       <div>
         {label('Link URL (optional)')}

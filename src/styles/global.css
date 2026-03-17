@@ -69,6 +69,11 @@ body {
   font-size: 0.9em;
 }
 
+/* Notion-style: every top-level block gets a small bottom margin */
+.tiptap > * {
+  margin-bottom: 4px;
+}
+
 /* ProseMirror placeholder */
 .tiptap p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
