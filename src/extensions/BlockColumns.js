@@ -1,6 +1,7 @@
 import { Node } from '@tiptap/core';
 import { ReactNodeViewRenderer } from '@tiptap/react';
 import BlockColumnsView from '../components/nodeviews/BlockColumnsView.jsx';
+import BlockColumnView from '../components/nodeviews/BlockColumnView.jsx';
 
 export const BlockColumns = Node.create({
   name: 'blockColumns',
@@ -38,5 +39,9 @@ export const BlockColumn = Node.create({
 
   renderHTML() {
     return ['div', { 'data-type': 'blockColumn' }, 0];
+  },
+
+  addNodeView() {
+    return ReactNodeViewRenderer(BlockColumnView);
   },
 });
