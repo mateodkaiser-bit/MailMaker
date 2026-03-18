@@ -1,12 +1,11 @@
 import ColorPicker from '../ui/ColorPicker.jsx';
 import NumberInput from '../ui/NumberInput.jsx';
 
-export default function DividerStylePanel({ editor }) {
-  if (!editor) return null;
-  if (!editor.isActive('blockDivider')) return null;
+export default function DividerStylePanel({ block, onUpdate }) {
+  if (!block || block.type !== 'divider') return null;
 
-  const attrs = editor.getAttributes('blockDivider');
-  function update(patch) { editor.chain().focus().updateAttributes('blockDivider', patch).run(); }
+  const attrs = block.attrs;
+  function update(patch) { onUpdate(block.id, { attrs: { ...block.attrs, ...patch } }); }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: 16 }}>

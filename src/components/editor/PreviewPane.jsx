@@ -1,15 +1,25 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { resolveVariables, mergeVariables } from '../../lib/variableResolver.js';
 import Icon from '../ui/Icon.jsx';
 
 const EMAIL_WIDTH = 600;
 
-export default function PreviewPane({ html, error }) {
+export default function PreviewPane({ html, error, variables = [], globalVariables = [] }) {
   const [device, setDevice] = useState('desktop');
 
   const containerRef = useRef(null);
+  const iframeRef = useRef(null);
   const [scale, setScale] = useState(1);
+  const [iframeHeight, setIframeHeight] = useState(800);
 
   const targetWidth = device === 'mobile' ? 375 : EMAIL_WIDTH;
+
+  // Merge template + global variables and resolve tokens in compiled HTML
+  const resolvedHtml = useMemo(() => {
+    if (!html) return '';
+    const merged = mergeVariables(variables, globalVariables);
+    return resolveVariables(html, merged);
+  }, [html, variables, globalVariables]);
 
   const updateScale = useCallback(() => {
     if (!containerRef.current) return;
@@ -25,7 +35,32 @@ export default function PreviewPane({ html, error }) {
     return () => observer.disconnect();
   }, [updateScale]);
 
+  // Auto-size iframe height to match its content
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe || !resolvedHtml) return;
+
+    function syncHeight() {
+      try {
+        const doc = iframe.contentDocument;
+        if (doc?.body) {
+          const h = doc.body.scrollHeight;
+          if (h > 0) setIframeHeight(h);
+        }
+      } catch (_) { /* cross-origin safety */ }
+    }
+
+    iframe.addEventListener('load', syncHeight);
+    // Also poll briefly after load for images/fonts to finish rendering
+    const timer = setTimeout(syncHeight, 500);
+    return () => {
+      iframe.removeEventListener('load', syncHeight);
+      clearTimeout(timer);
+    };
+  }, [resolvedHtml]);
+
   const scaledOuterWidth = targetWidth * scale;
+  const scaledOuterHeight = iframeHeight * scale;
 
   const deviceButtons = [
     { id: 'desktop', icon: 'desktop_windows', label: 'Desktop' },
@@ -107,19 +142,25 @@ export default function PreviewPane({ html, error }) {
         className="dot-grid"
         style={{ flex: 1, overflowY: 'auto', display: 'flex', justifyContent: 'center', padding: 24 }}
       >
-        {html ? (
-          <div style={{ width: scaledOuterWidth, flexShrink: 0 }}>
-            <div
+        {resolvedHtml ? (
+          <div style={{ width: scaledOuterWidth, height: scaledOuterHeight, flexShrink: 0 }}>
+            <iframe
+              ref={iframeRef}
+              srcDoc={resolvedHtml}
+              title="Email preview"
+              sandbox="allow-same-origin"
               style={{
                 width: targetWidth,
+                height: iframeHeight,
                 transformOrigin: 'top left',
                 transform: `scale(${scale})`,
-                background: 'var(--color-white)',
+                background: '#ffffff',
                 borderRadius: 'var(--radius-lg)',
                 boxShadow: 'var(--shadow-md)',
+                border: 'none',
                 overflow: 'hidden',
+                display: 'block',
               }}
-              dangerouslySetInnerHTML={{ __html: html }}
             />
           </div>
         ) : (

@@ -7,11 +7,12 @@ export const BlockImage = Node.create({
 
   addAttributes() {
     return {
-      src:   { default: '' },
-      alt:   { default: '' },
-      width: { default: '100%' },
-      align: { default: 'center' },
-      href:  { default: null },
+      src:          { default: '' },
+      alt:          { default: '' },
+      width:        { default: '100%' },
+      align:        { default: 'center' },
+      href:         { default: null },
+      borderRadius: { default: 5 },
     };
   },
 
@@ -37,6 +38,8 @@ export const BlockImage = Node.create({
       img.style.width = typeof w === 'number' ? `${w}px` : (w || '100%');
       img.style.display = 'inline-block';
       img.style.maxWidth = '100%';
+      const br = node.attrs.borderRadius;
+      if (br) img.style.borderRadius = `${br}px`;
       dom.appendChild(img);
 
       return { dom };

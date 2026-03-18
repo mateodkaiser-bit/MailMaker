@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useClipboard } from '../../hooks/useClipboard.js';
+import { useBlockEditorContext } from '../../context/BlockEditorContext.jsx';
 import Icon from '../ui/Icon.jsx';
 
 const secondaryBtn = (active) => ({
@@ -15,15 +16,16 @@ const secondaryBtn = (active) => ({
   display: 'flex', alignItems: 'center', gap: 5,
 });
 
-export default function EditorTopBar({ editor, template, onRename, html, isCompiling, hasError, onPreviewToggle, previewOpen }) {
+export default function EditorTopBar({ template, onRename, html, isCompiling, hasError, onPreviewToggle, previewOpen }) {
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(template?.name ?? '');
   const { copied: copiedHtml, copy: copyHtml } = useClipboard();
   const [exportOpen, setExportOpen] = useState(false);
 
-  const canUndo = editor?.can().undo() ?? false;
-  const canRedo = editor?.can().redo() ?? false;
+  const blockEditor = useBlockEditorContext();
+  const canUndo = blockEditor?.canUndo ?? false;
+  const canRedo = blockEditor?.canRedo ?? false;
 
   function commitRename() {
     if (name.trim()) onRename(name.trim());
@@ -149,8 +151,8 @@ export default function EditorTopBar({ editor, template, onRename, html, isCompi
       {/* Undo / Redo */}
       <div style={{ display: 'flex', gap: 2, borderRight: '1.5px solid var(--color-ghost)', paddingRight: 8, marginRight: 4 }}>
         {[
-          { icon: 'undo', action: () => editor?.chain().focus().undo().run(), enabled: canUndo, title: 'Undo (⌘Z)' },
-          { icon: 'redo', action: () => editor?.chain().focus().redo().run(), enabled: canRedo, title: 'Redo (⌘⇧Z)' },
+          { icon: 'undo', action: () => blockEditor?.undo(), enabled: canUndo, title: 'Undo (⌘Z)' },
+          { icon: 'redo', action: () => blockEditor?.redo(), enabled: canRedo, title: 'Redo (⌘⇧Z)' },
         ].map(({ icon, action, enabled, title }) => (
           <button
             key={icon}

@@ -1,220 +1,137 @@
-import { useEffect, useRef, useState } from 'react';
-import { SLASH_MENU_KEY } from '../../extensions/SlashCommand.js';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import Icon from '../ui/Icon.jsx';
 
 const COMMANDS = [
   {
     group: 'Text',
     items: [
-      { label: 'Paragraph',   desc: 'Plain body text',              icon: 'notes',          type: 'paragraph' },
-      { label: 'Heading 1',   desc: 'Large section heading',        icon: 'format_h1',      type: 'heading', attrs: { level: 1 } },
-      { label: 'Heading 2',   desc: 'Medium section heading',       icon: 'format_h2',      type: 'heading', attrs: { level: 2 } },
-      { label: 'Heading 3',   desc: 'Small section heading',        icon: 'format_h3',      type: 'heading', attrs: { level: 3 } },
+      { label: 'Paragraph', desc: 'Plain text', icon: 'notes', type: 'paragraph' },
+      { label: 'Heading 1', desc: 'Large heading', icon: 'title', type: 'heading', meta: { level: 1 } },
+      { label: 'Heading 2', desc: 'Medium heading', icon: 'title', type: 'heading', meta: { level: 2 } },
+      { label: 'Heading 3', desc: 'Small heading', icon: 'title', type: 'heading', meta: { level: 3 } },
     ],
   },
   {
     group: 'Blocks',
     items: [
-      { label: 'Image',        desc: 'Full-width image block',       icon: 'image',          type: 'blockImage' },
-      { label: 'Button',       desc: 'Call-to-action button',        icon: 'smart_button',   type: 'blockButton' },
-      { label: 'Divider',      desc: 'Horizontal rule',              icon: 'horizontal_rule',type: 'blockDivider' },
-      { label: 'Spacer',       desc: 'Empty vertical space',         icon: 'height',         type: 'blockSpacer' },
-      { label: 'Two Columns',  desc: 'Side-by-side layout',          icon: 'view_column',    type: 'blockColumns' },
-      { label: 'Social Icons', desc: 'Social media link buttons',    icon: 'hub',            type: 'blockSocialIcons' },
+      { label: 'Image', desc: 'Upload or embed image', icon: 'image', type: 'image' },
+      { label: 'Button', desc: 'Call-to-action button', icon: 'smart_button', type: 'button' },
+      { label: 'Divider', desc: 'Horizontal line', icon: 'horizontal_rule', type: 'divider' },
+      { label: 'Spacer', desc: 'Vertical spacing', icon: 'expand', type: 'spacer' },
+      { label: 'Two Columns', desc: 'Side-by-side layout', icon: 'view_column_2', type: 'columns' },
+      { label: 'Three Columns', desc: 'Three-column layout', icon: 'view_column', type: 'columns-3' },
+      { label: 'Social Icons', desc: 'Social media links', icon: 'share', type: 'socialIcons' },
     ],
   },
 ];
 
-const ALL_ITEMS = COMMANDS.flatMap(g => g.items);
-
-export default function SlashMenu({ editor }) {
-  const [state, setState] = useState({ active: false, query: '', range: null });
+export default function SlashMenu({ rect, onSelect, onClose }) {
+  const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const ref = useRef(null);
+  const menuRef = useRef(null);
+  const inputRef = useRef(null);
 
-  useEffect(() => {
-    if (!editor) return;
-    const update = () => {
-      const s = SLASH_MENU_KEY.getState(editor.state);
-      setState(s || { active: false, query: '', range: null });
-      setSelectedIndex(0);
-    };
-    editor.on('transaction', update);
-    return () => editor.off('transaction', update);
-  }, [editor]);
-
-  const filtered = ALL_ITEMS.filter(c =>
-    c.label.toLowerCase().includes((state.query || '').toLowerCase()) ||
-    c.desc.toLowerCase().includes((state.query || '').toLowerCase())
+  const allItems = COMMANDS.flatMap(g =>
+    g.items.map(item => ({ ...item, group: g.group }))
   );
+  const filtered = query
+    ? allItems.filter(i => i.label.toLowerCase().includes(query.toLowerCase()))
+    : allItems;
+
+  useEffect(() => { inputRef.current?.focus(); }, []);
+  useEffect(() => { setSelectedIndex(0); }, [query]);
 
   useEffect(() => {
-    if (!state.active) return;
-    function onKey(e) {
-      if (e.key === 'ArrowDown') { e.preventDefault(); setSelectedIndex(i => (i + 1) % filtered.length); }
-      if (e.key === 'ArrowUp')   { e.preventDefault(); setSelectedIndex(i => (i - 1 + filtered.length) % filtered.length); }
-      if (e.key === 'Enter')     { e.preventDefault(); insertCommand(filtered[selectedIndex]); }
-      if (e.key === 'Escape')    { closeMenu(); }
+    function handleClick(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) onClose();
     }
-    window.addEventListener('keydown', onKey, true);
-    return () => window.removeEventListener('keydown', onKey, true);
-  }, [state.active, filtered, selectedIndex]);
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [onClose]);
 
-  function closeMenu() {
-    editor.view.dispatch(
-      editor.state.tr.setMeta(SLASH_MENU_KEY, { active: false, query: '', range: null })
-    );
-  }
-
-  function insertCommand(cmd) {
-    if (!cmd || !state.range) return;
-    const { from, to } = state.range;
-    editor.chain().focus().deleteRange({ from, to }).run();
-
-    if (cmd.type === 'paragraph') {
-      editor.chain().focus().setParagraph().run();
-    } else if (cmd.type === 'heading') {
-      editor.chain().focus().setHeading(cmd.attrs).run();
-    } else {
-      const defaults = {
-        blockImage:       { src: '', alt: '', width: '100%', align: 'center' },
-        blockButton:      { label: 'Click here', href: '#' },
-        blockDivider:     { color: '#E5E7EB', thickness: 1, width: 100 },
-        blockSpacer:      { height: 24 },
-        blockColumns:     { ratio: '50-50' },
-        blockSocialIcons: { icons: [] },
-      };
-      editor.chain().focus().insertContent({ type: cmd.type, attrs: defaults[cmd.type] || {} }).run();
-    }
-    closeMenu();
-  }
-
-  if (!state.active || filtered.length === 0) return null;
-
-  const coords = editor.view.coordsAtPos(state.range?.from ?? 0);
-
-  const groupedFiltered = state.query
-    ? [{ group: null, items: filtered }]
-    : COMMANDS.map(g => ({ group: g.group, items: g.items.filter(i => filtered.includes(i)) })).filter(g => g.items.length > 0);
-
-  let globalIdx = 0;
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'Escape') { e.preventDefault(); onClose(); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); setSelectedIndex(i => Math.min(i + 1, filtered.length - 1)); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setSelectedIndex(i => Math.max(i - 1, 0)); }
+    else if (e.key === 'Enter') { e.preventDefault(); if (filtered[selectedIndex]) onSelect(filtered[selectedIndex].type, filtered[selectedIndex].meta); }
+  }, [filtered, selectedIndex, onSelect, onClose]);
 
   return (
     <div
-      ref={ref}
+      ref={menuRef}
       style={{
         position: 'fixed',
-        top: coords.bottom + 8,
-        left: Math.max(8, coords.left),
-        // Blueprint: blue-grey background, thick black border, sharp corners
-        background: 'var(--color-hover-light)',
-        border: '2px solid #000',
-        borderRadius: 0,
-        boxShadow: 'none',
-        zIndex: 500,
-        minWidth: 264,
-        maxHeight: 380,
+        top: rect.bottom + 4,
+        left: rect.left,
+        zIndex: 1000,
+        width: '280px',
+        maxHeight: '320px',
         overflowY: 'auto',
-        padding: '8px 0 0',
+        background: '#fff',
+        borderRadius: '8px',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.15)',
+        border: '1px solid var(--color-border)',
+        padding: '4px',
       }}
     >
-      {groupedFiltered.map(({ group, items }) => (
-        <div key={group ?? 'results'}>
-          {group && (
-            <div style={{
-              padding: '0 14px 6px',
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: '0.07em',
-              color: 'var(--color-shell)',
-              textTransform: 'uppercase',
-            }}>
-              {group}
-            </div>
-          )}
-          {items.map(cmd => {
-            const idx = globalIdx++;
-            const active = idx === selectedIndex;
-            return (
+      <div style={{ padding: '8px 8px 4px' }}>
+        <input
+          ref={inputRef}
+          type="text"
+          placeholder="Filter…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
+          style={{
+            width: '100%', border: 'none', outline: 'none',
+            fontSize: '14px', color: 'var(--color-ink)',
+            padding: '4px 0', background: 'transparent',
+          }}
+        />
+      </div>
+
+      {filtered.length === 0 && (
+        <div style={{ padding: '12px', color: 'var(--color-muted)', fontSize: '13px', textAlign: 'center' }}>
+          No matching blocks
+        </div>
+      )}
+
+      {(() => {
+        let lastGroup = '';
+        return filtered.map((item, i) => {
+          const showGroup = item.group !== lastGroup;
+          lastGroup = item.group;
+          return (
+            <div key={`${item.type}-${item.label}`}>
+              {showGroup && (
+                <div style={{
+                  fontSize: '10px', fontWeight: 700, textTransform: 'uppercase',
+                  letterSpacing: '0.06em', color: 'var(--color-muted)', padding: '8px 8px 4px',
+                }}>
+                  {item.group}
+                </div>
+              )}
               <button
-                key={cmd.type + (cmd.attrs?.level ?? '')}
-                onMouseDown={e => { e.preventDefault(); insertCommand(cmd); }}
-                onMouseEnter={() => setSelectedIndex(idx)}
+                onClick={() => onSelect(item.type, item.meta)}
+                onMouseEnter={() => setSelectedIndex(i)}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 10,
-                  width: '100%', textAlign: 'left',
-                  padding: '8px 12px',
-                  // Safety Orange for active; transparent otherwise
-                  background: active ? 'var(--color-punch)' : 'transparent',
-                  border: 'none',
-                  borderBottom: '1px solid rgba(0,0,0,0.10)',
-                  cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: '10px',
+                  width: '100%', padding: '8px', border: 'none', borderRadius: '4px',
+                  background: i === selectedIndex ? 'var(--color-ghost)' : 'transparent',
+                  cursor: 'pointer', textAlign: 'left', fontSize: '14px',
+                  color: 'var(--color-ink)', transition: 'background 0.05s',
                 }}
               >
-                {/* Icon tile — white box on active, shell on inactive */}
-                <div style={{
-                  width: 28, height: 28,
-                  background: active ? '#fff' : 'var(--color-shell)',
-                  border: 'none',
-                  borderRadius: 0,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  flexShrink: 0,
-                }}>
-                  <span
-                    className="material-symbols-rounded"
-                    style={{
-                      fontSize: 15,
-                      color: active ? 'var(--color-punch)' : 'var(--color-hover-light)',
-                      fontVariationSettings: "'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 16",
-                    }}
-                  >
-                    {cmd.icon}
-                  </span>
-                </div>
-
-                {/* Label + desc */}
-                <div style={{ minWidth: 0 }}>
-                  <div style={{
-                    fontSize: 'var(--text-sm)',
-                    fontWeight: 600,
-                    color: active ? '#fff' : 'var(--color-shell)',
-                    lineHeight: 1.3,
-                  }}>
-                    {cmd.label}
-                  </div>
-                  <div style={{
-                    fontSize: 'var(--text-xs)',
-                    color: active ? 'rgba(255,255,255,0.75)' : 'var(--color-ink)',
-                    lineHeight: 1.4,
-                    marginTop: 1,
-                  }}>
-                    {cmd.desc}
-                  </div>
+                <Icon name={item.icon} size={18} style={{ color: 'var(--color-slate)', flexShrink: 0 }} />
+                <div>
+                  <div style={{ fontWeight: 500 }}>{item.label}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--color-muted)' }}>{item.desc}</div>
                 </div>
               </button>
-            );
-          })}
-        </div>
-      ))}
-
-      {/* Keyboard hint bar */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 8,
-        padding: '6px 14px',
-        borderTop: '1.5px solid rgba(0,0,0,0.2)',
-        background: 'var(--color-shell)',
-      }}>
-        {[['arrow_upward', ''], ['arrow_downward', 'navigate'], ['keyboard_return', 'select']].map(([icon, label]) => (
-          <span key={icon} style={{ display: 'flex', alignItems: 'center', gap: 3, color: 'var(--color-hover-light)', fontSize: 10 }}>
-            <span
-              className="material-symbols-rounded"
-              style={{ fontSize: 11, fontVariationSettings: "'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 12" }}
-            >
-              {icon}
-            </span>
-            {label}
-          </span>
-        ))}
-      </div>
+            </div>
+          );
+        });
+      })()}
     </div>
   );
 }

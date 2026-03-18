@@ -25,14 +25,13 @@ const inputStyle = {
   background: 'var(--color-white)',
 };
 
-export default function ButtonStylePanel({ editor }) {
-  if (!editor) return null;
-  if (!editor.isActive('blockButton')) return null;
+export default function ButtonStylePanel({ block, onUpdate }) {
+  if (!block || block.type !== 'button') return null;
 
-  const attrs = editor.getAttributes('blockButton');
+  const attrs = block.attrs;
 
   function update(patch) {
-    editor.chain().focus().updateAttributes('blockButton', patch).run();
+    onUpdate(block.id, { attrs: { ...block.attrs, ...patch } });
   }
 
   return (

@@ -17,7 +17,7 @@ body {
   font-family: var(--font-sans);
   font-size: var(--text-base);
   color: var(--color-ink);
-  background: var(--color-shell);
+  background: var(--color-surface);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -25,8 +25,8 @@ body {
 /* TipTap editor content styles */
 .tiptap {
   outline: none;
-  min-height: 100%;
-  padding: 32px 24px;
+  min-height: 300px;
+  padding: 32px 40px;
 }
 
 .tiptap p {
@@ -69,13 +69,20 @@ body {
   font-size: 0.9em;
 }
 
-/* ProseMirror placeholder */
+/* ProseMirror placeholder (legacy) */
 .tiptap p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
   color: var(--color-muted);
   pointer-events: none;
   height: 0;
+}
+
+/* Block editor: empty text block placeholder */
+[contenteditable]:empty::before {
+  content: attr(data-placeholder);
+  color: var(--color-muted);
+  pointer-events: none;
 }
 
 /* ── Active block: 3 px Safety Orange left indicator ───── */
@@ -86,13 +93,58 @@ body {
   box-shadow: -4px 0 0 0 var(--color-punch) !important;
 }
 
-/* ── Canvas background — blueprint grid on shell ────────── */
-/* Replaces the dot-grid; subtle 32 px crosshatch           */
+/* ── Columns layout ─────────────────────────────────────── */
+/* NodeViewContent renders as .dm-columns-flex, which is a  */
+/* flex container. Each blockColumn child is a flex item.   */
+.dm-columns-flex {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+[data-type="blockColumn"] {
+  min-width: 0;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+/* 50-50 ratio */
+[data-ratio="50-50"] .dm-columns-flex > [data-type="blockColumn"] {
+  flex: 1 1 50%;
+}
+
+/* 33-66 ratio */
+[data-ratio="33-66"] .dm-columns-flex > [data-type="blockColumn"]:first-child {
+  flex: 0 0 33%;
+}
+[data-ratio="33-66"] .dm-columns-flex > [data-type="blockColumn"]:last-child {
+  flex: 0 0 calc(67% - 16px);
+}
+
+/* 66-33 ratio */
+[data-ratio="66-33"] .dm-columns-flex > [data-type="blockColumn"]:first-child {
+  flex: 0 0 calc(67% - 16px);
+}
+[data-ratio="66-33"] .dm-columns-flex > [data-type="blockColumn"]:last-child {
+  flex: 0 0 33%;
+}
+
+/* ── Block content max-width guard ─────────────────────── */
+/* Prevents any block element from overflowing the canvas   */
+.tiptap img,
+.tiptap video,
+.tiptap table {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ── Canvas background — light blueprint grid ───────────── */
 .dot-grid {
-  background-color: var(--color-shell);
+  background-color: var(--color-ghost);
   background-image:
-    linear-gradient(rgba(148, 181, 205, 0.12) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(148, 181, 205, 0.12) 1px, transparent 1px);
+    linear-gradient(rgba(92, 112, 128, 0.10) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(92, 112, 128, 0.10) 1px, transparent 1px);
   background-size: 32px 32px;
 }
 

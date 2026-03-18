@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import Icon from './Icon.jsx';
 
-export default function Modal({ open, onClose, title, children, footer }) {
+export default function Modal({ open, onClose, title, children, footer, width = 480 }) {
   useEffect(() => {
     if (!open) return;
     const onKey = (e) => { if (e.key === 'Escape') onClose?.(); };
@@ -27,7 +27,7 @@ export default function Modal({ open, onClose, title, children, footer }) {
           border: '1.5px solid #000',
           borderRadius: 0,
           boxShadow: 'none',
-          width: 480,
+          width,
           maxWidth: '90vw',
           maxHeight: '85vh',
           display: 'flex',

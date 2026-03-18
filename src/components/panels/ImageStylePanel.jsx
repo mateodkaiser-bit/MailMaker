@@ -7,17 +7,16 @@ const ALIGN_OPTIONS = [
   { value: 'right',  icon: 'format_align_right'  },
 ];
 
-export default function ImageStylePanel({ editor }) {
+export default function ImageStylePanel({ block, onUpdate }) {
   const fileRef = useRef(null);
   const [dragOver, setDragOver] = useState(false);
 
-  if (!editor) return null;
-  if (!editor.isActive('blockImage')) return null;
+  if (!block || block.type !== 'image') return null;
 
-  const attrs = editor.getAttributes('blockImage');
+  const attrs = block.attrs;
 
   function update(patch) {
-    editor.chain().focus().updateAttributes('blockImage', patch).run();
+    onUpdate(block.id, { attrs: { ...block.attrs, ...patch } });
   }
 
   // true when the current src is a local file (data URL)
@@ -158,10 +157,10 @@ export default function ImageStylePanel({ editor }) {
       <div>
         {label('URL')}
         <input
-          type="url"
+          type="text"
           value={isDataUrl ? '' : (attrs.src || '')}
           onChange={e => update({ src: e.target.value })}
-          placeholder={isDataUrl ? '(local file — clear above to use URL)' : 'https://example.com/image.png'}
+          placeholder={isDataUrl ? '(local file — clear above to use URL)' : 'https://… or {{ variable }}'}
           disabled={isDataUrl}
           style={{
             ...inputBase,
@@ -169,6 +168,11 @@ export default function ImageStylePanel({ editor }) {
             background: isDataUrl ? 'var(--color-ghost)' : 'var(--color-white)',
           }}
         />
+        {!isDataUrl && (
+          <div style={{ fontSize: '11px', color: 'var(--color-muted)', marginTop: 4 }}>
+            Supports <code style={{ background: 'var(--color-ghost)', padding: '0 3px', borderRadius: 2 }}>{'{{ variable }}'}</code> for dynamic images
+          </div>
+        )}
       </div>
 
       {/* ── Alt text ── */}
@@ -193,6 +197,42 @@ export default function ImageStylePanel({ editor }) {
           placeholder="100% or 600px"
           style={inputBase}
         />
+      </div>
+
+      {/* ── Corner rounding ── */}
+      <div>
+        {label('Corner rounding')}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button
+            onClick={() => update({ borderRadius: Math.max(0, (attrs.borderRadius ?? 5) - 1) })}
+            style={{
+              width: 28, height: 28,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'var(--color-ghost)', border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-sm)', cursor: 'pointer',
+              color: 'var(--color-slate)', fontSize: 'var(--text-sm)', fontWeight: 600,
+            }}
+          >−</button>
+          <input
+            type="number"
+            min={0}
+            max={100}
+            value={attrs.borderRadius ?? 5}
+            onChange={e => update({ borderRadius: Math.max(0, parseInt(e.target.value, 10) || 0) })}
+            style={{ ...inputBase, width: 56, textAlign: 'center' }}
+          />
+          <button
+            onClick={() => update({ borderRadius: Math.min(100, (attrs.borderRadius ?? 5) + 1) })}
+            style={{
+              width: 28, height: 28,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'var(--color-ghost)', border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-sm)', cursor: 'pointer',
+              color: 'var(--color-slate)', fontSize: 'var(--text-sm)', fontWeight: 600,
+            }}
+          >+</button>
+          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-muted)' }}>px</span>
+        </div>
       </div>
 
       {/* ── Alignment ── */}
@@ -227,10 +267,10 @@ export default function ImageStylePanel({ editor }) {
       <div>
         {label('Link URL (optional)')}
         <input
-          type="url"
+          type="text"
           value={attrs.href || ''}
           onChange={e => update({ href: e.target.value || null })}
-          placeholder="https://example.com"
+          placeholder="https://… or {{ variable }}"
           style={inputBase}
         />
       </div>

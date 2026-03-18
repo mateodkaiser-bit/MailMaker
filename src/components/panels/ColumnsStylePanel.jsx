@@ -2,14 +2,14 @@ const RATIO_OPTIONS = [
   { value: '50-50', label: '50 / 50' },
   { value: '33-66', label: '33 / 66' },
   { value: '66-33', label: '66 / 33' },
+  { value: '33-33-33', label: '33 / 33 / 33' },
 ];
 
-export default function ColumnsStylePanel({ editor }) {
-  if (!editor) return null;
-  if (!editor.isActive('blockColumns')) return null;
+export default function ColumnsStylePanel({ block, onUpdate }) {
+  if (!block || block.type !== 'columns') return null;
 
-  const attrs = editor.getAttributes('blockColumns');
-  function update(patch) { editor.chain().focus().updateAttributes('blockColumns', patch).run(); }
+  const attrs = block.attrs;
+  function update(patch) { onUpdate(block.id, { attrs: { ...block.attrs, ...patch } }); }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: 16 }}>

@@ -6,12 +6,15 @@ import NavRail from '../components/ui/NavRail.jsx';
 import Modal from '../components/ui/Modal.jsx';
 import Icon from '../components/ui/Icon.jsx';
 import { STARTER_TEMPLATES } from '../lib/constants.js';
+import { SWARMED_TEMPLATES } from '../lib/swarmedTemplates.js';
+import { cloneBlocksWithNewIds } from '../lib/migrateDoc.js';
 
 export default function HomePage() {
   const navigate = useNavigate();
   const { templates, createTemplate, duplicateTemplate, deleteTemplate } = useTemplateStore();
   const [starterOpen, setStarterOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const [starterSearch, setStarterSearch] = useState('');
 
   const filtered = templates.filter(t =>
     t.name.toLowerCase().includes(search.toLowerCase())
@@ -23,7 +26,11 @@ export default function HomePage() {
   }
 
   function handlePickStarter(starter) {
-    const id = createTemplate({ name: starter.name, doc: starter.doc });
+    // Swarmed templates use blocks array; clone with fresh IDs
+    const doc = starter.blocks
+      ? cloneBlocksWithNewIds(starter.blocks)
+      : starter.doc;
+    const id = createTemplate({ name: starter.name, doc });
     setStarterOpen(false);
     navigate(`/editor/${id}`);
   }
@@ -140,10 +147,18 @@ export default function HomePage() {
       {/* Starter modal */}
       <Modal
         open={starterOpen}
-        onClose={() => setStarterOpen(false)}
+        onClose={() => { setStarterOpen(false); setStarterSearch(''); }}
         title="Choose a starter"
+        width={640}
       >
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        {/* Generic starters */}
+        <div style={{
+          fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
+          letterSpacing: '0.06em', color: 'var(--color-muted)', marginBottom: 8,
+        }}>
+          Blank starters
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 20 }}>
           {STARTER_TEMPLATES.map(starter => (
             <button
               key={starter.name}
@@ -177,6 +192,72 @@ export default function HomePage() {
               </div>
             </button>
           ))}
+        </div>
+
+        {/* Swarmed templates */}
+        <div style={{
+          borderTop: '1.5px solid var(--color-surface-mid)',
+          paddingTop: 16,
+        }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            marginBottom: 10,
+          }}>
+            <div style={{
+              fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
+              letterSpacing: '0.06em', color: 'var(--color-muted)',
+            }}>
+              Swarmed templates ({SWARMED_TEMPLATES.length})
+            </div>
+            <input
+              type="search"
+              placeholder="Filter…"
+              value={starterSearch}
+              onChange={e => setStarterSearch(e.target.value)}
+              style={{
+                border: '1.5px solid var(--color-surface-mid)',
+                borderRadius: 0,
+                padding: '4px 10px',
+                fontSize: 'var(--text-xs)',
+                width: 140,
+                outline: 'none',
+                background: 'var(--color-ghost)',
+                color: 'var(--color-ink)',
+              }}
+            />
+          </div>
+          <div style={{
+            display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6,
+            maxHeight: 320, overflowY: 'auto',
+          }}>
+            {SWARMED_TEMPLATES
+              .filter(t => !starterSearch || t.name.toLowerCase().includes(starterSearch.toLowerCase()))
+              .map(tmpl => (
+                <button
+                  key={tmpl.fileName}
+                  onClick={() => handlePickStarter(tmpl)}
+                  style={{
+                    background: 'var(--color-white)',
+                    border: '1.5px solid var(--color-surface-mid)',
+                    borderRadius: 0,
+                    padding: '10px 14px',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    transition: 'border-color 0.1s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--color-punch)'}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--color-surface-mid)'}
+                >
+                  <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)', color: 'var(--color-ink)', lineHeight: 1.4 }}>
+                    {tmpl.name}
+                  </div>
+                  <div style={{ color: 'var(--color-muted)', fontSize: 'var(--text-xs)', marginTop: 2 }}>
+                    {tmpl.blocks.length} blocks
+                  </div>
+                </button>
+              ))
+            }
+          </div>
         </div>
       </Modal>
     </div>

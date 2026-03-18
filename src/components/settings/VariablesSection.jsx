@@ -33,11 +33,11 @@ export default function VariablesSection({ variables, onAdd, onUpdate, onDelete 
   function handleAdd() {
     const key = newKey.trim().replace(/\s+/g, '_').toLowerCase();
     if (!key) return;
-    if (variables.some(v => v.key === key)) {
+    if (variables.some(v => v.name === key)) {
       toast('Variable name already exists', 'danger');
       return;
     }
-    onAdd({ key, fallback: newFallback.trim() });
+    onAdd({ name: key, fallback: newFallback.trim() });
     setNewKey('');
     setNewFallback('');
     toast('Variable added', 'success');
@@ -66,8 +66,8 @@ export default function VariablesSection({ variables, onAdd, onUpdate, onDelete 
           {variables.map((v, i) => (
             <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 12, marginBottom: 8, alignItems: 'center' }}>
               <input
-                value={v.key}
-                onChange={e => onUpdate(i, { key: e.target.value.replace(/\s/g, '_').toLowerCase() })}
+                value={v.name}
+                onChange={e => onUpdate(i, { name: e.target.value.replace(/\s/g, '_').toLowerCase() })}
                 style={{ ...inputStyle, fontFamily: 'monospace' }}
               />
               <input

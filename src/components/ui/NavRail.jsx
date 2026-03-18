@@ -23,11 +23,11 @@ export default function NavRail() {
       style={{
         width: 'var(--nav-width)',
         height: '100%',
-        background: 'var(--color-shell)',
+        background: 'var(--color-white)',
         display: 'flex',
         flexDirection: 'column',
         flexShrink: 0,
-        borderRight: '1.5px solid #000',
+        borderRight: '1.5px solid var(--color-border)',
         overflow: 'hidden',
       }}
     >
@@ -37,21 +37,20 @@ export default function NavRail() {
         display: 'flex',
         alignItems: 'center',
         padding: '0 16px',
-        borderBottom: '1.5px solid rgba(0,0,0,0.45)',
+        borderBottom: '1.5px solid var(--color-border)',
         gap: 10,
         flexShrink: 0,
       }}>
-        {/* Safety Orange mark */}
         <div style={{
-          width: 28, height: 28,
+          width: 26, height: 26,
           background: 'var(--color-punch)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexShrink: 0,
         }}>
-          <Icon name="mail" size={15} fill={1} style={{ color: '#fff' }} />
+          <Icon name="mail" size={14} fill={1} style={{ color: '#fff' }} />
         </div>
         <span style={{
-          color: '#fff',
+          color: 'var(--color-ink)',
           fontWeight: 800,
           fontSize: 'var(--text-base)',
           letterSpacing: '0.05em',
@@ -83,8 +82,8 @@ export default function NavRail() {
               alignItems: 'center',
               gap: 10,
               padding: '8px 10px',
-              color: isActive ? '#fff' : 'var(--color-hover-light)',
-              background: isActive ? 'rgba(255,255,255,0.08)' : 'transparent',
+              color: isActive ? 'var(--color-ink)' : 'var(--color-slate)',
+              background: isActive ? 'var(--color-ghost)' : 'transparent',
               borderLeft: isActive
                 ? '3px solid var(--color-punch)'
                 : '3px solid transparent',
@@ -95,7 +94,7 @@ export default function NavRail() {
             })}
             onMouseEnter={e => {
               if (!e.currentTarget.getAttribute('aria-current')) {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                e.currentTarget.style.background = 'var(--color-ghost)';
               }
             }}
             onMouseLeave={e => {
@@ -111,7 +110,7 @@ export default function NavRail() {
                   size={16}
                   fill={isActive ? 1 : 0}
                   weight={isActive ? 400 : 300}
-                  style={{ color: isActive ? '#fff' : 'var(--color-hover-light)', flexShrink: 0 }}
+                  style={{ color: isActive ? 'var(--color-ink)' : 'var(--color-slate)', flexShrink: 0 }}
                 />
                 {label}
               </>
@@ -120,15 +119,16 @@ export default function NavRail() {
         ))}
       </div>
 
-      {/* Blueprint footer stamp */}
+      {/* Footer stamp */}
       <div style={{
         fontSize: 9,
         fontWeight: 700,
         textTransform: 'uppercase',
         letterSpacing: '0.08em',
-        color: 'rgba(148,181,205,0.35)',
+        color: 'var(--color-muted)',
         padding: '12px 16px',
-        borderTop: '1px solid rgba(0,0,0,0.3)',
+        borderTop: '1px solid var(--color-border)',
+        opacity: 0.5,
       }}>
         MailDraft v1
       </div>

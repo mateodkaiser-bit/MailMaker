@@ -89,7 +89,13 @@ class DragHandleView {
     this._onDragEnd       = this._onDragEnd.bind(this);
     this._onContainerDown = this._onContainerDown.bind(this);
 
-    this._container = view.dom.parentElement;
+    // Use view.dom (the ProseMirror element) directly as the container.
+    // view.dom.parentElement at construction time points to Tiptap's temporary
+    // detached mount element — after EditorContent mounts, the ProseMirror DOM
+    // is moved into the real DOM tree, so only view.dom itself is reliable.
+    // The ProseMirror element has padding:32px 40px, so the handle (28px left
+    // of block content = 12px inside the left padding) is within its bounds.
+    this._container = view.dom;
     this._container.addEventListener('mousemove', this._onMove);
     this._container.addEventListener('mouseleave', this._onLeave);
     this._container.addEventListener('mousedown', this._onContainerDown);
@@ -192,7 +198,12 @@ class DragHandleView {
     if (!hit) return null;
 
     try {
-      const rawPos  = hit.inside >= 0 ? hit.inside : hit.pos;
+      // When hit.inside >= 0, it is the position BEFORE the node (the node's
+      // start position). doc.resolve(hit.inside) gives depth 0 for the first
+      // block (pos 0 = doc boundary), so we resolve hit.inside+1 (inside the
+      // node's content) to reliably get depth >= 1. This also handles nested
+      // nodes inside blockColumns — before(1) walks up to the top-level block.
+      const rawPos  = hit.inside >= 0 ? hit.inside + 1 : hit.pos;
       const $pos    = view.state.doc.resolve(rawPos);
       if ($pos.depth === 0) return null;
 

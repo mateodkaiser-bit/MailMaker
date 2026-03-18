@@ -1,3 +1,4 @@
+import { useBlockEditorContext } from '../../context/BlockEditorContext.jsx';
 import GlobalStylePanel from './GlobalStylePanel.jsx';
 import TextStylePanel from './TextStylePanel.jsx';
 import ImageStylePanel from './ImageStylePanel.jsx';
@@ -7,20 +8,21 @@ import SpacerStylePanel from './SpacerStylePanel.jsx';
 import ColumnsStylePanel from './ColumnsStylePanel.jsx';
 import SharedBlockInfoPanel from './SharedBlockInfoPanel.jsx';
 
-function detectPanel(editor) {
-  if (!editor) return 'global';
-  if (editor.isActive('sharedInstance')) return 'sharedInstance';
-  if (editor.isActive('blockImage'))    return 'image';
-  if (editor.isActive('blockButton'))   return 'button';
-  if (editor.isActive('blockDivider'))  return 'divider';
-  if (editor.isActive('blockSpacer'))   return 'spacer';
-  if (editor.isActive('blockColumns'))  return 'columns';
-  if (editor.isActive('heading') || editor.isActive('paragraph')) return 'text';
-  return 'global';
-}
+const TYPE_TO_PANEL = {
+  paragraph: 'text',
+  heading: 'text',
+  image: 'image',
+  button: 'button',
+  divider: 'divider',
+  spacer: 'spacer',
+  columns: 'columns',
+  sharedInstance: 'sharedInstance',
+  socialIcons: 'global',
+};
 
-export default function RightPanel({ editor, theme, onThemeChange }) {
-  const panel = detectPanel(editor);
+export default function RightPanel({ theme, onThemeChange }) {
+  const { selectedBlock, updateBlock } = useBlockEditorContext();
+  const panel = selectedBlock ? (TYPE_TO_PANEL[selectedBlock.type] || 'global') : 'global';
 
   return (
     <div style={{
@@ -31,14 +33,14 @@ export default function RightPanel({ editor, theme, onThemeChange }) {
       background: 'var(--color-white)',
       flexShrink: 0,
     }}>
-      {panel === 'global'         && <GlobalStylePanel      theme={theme} onChange={onThemeChange} />}
-      {panel === 'text'           && <TextStylePanel         editor={editor} />}
-      {panel === 'image'          && <ImageStylePanel        editor={editor} />}
-      {panel === 'button'         && <ButtonStylePanel       editor={editor} />}
-      {panel === 'divider'        && <DividerStylePanel      editor={editor} />}
-      {panel === 'spacer'         && <SpacerStylePanel       editor={editor} />}
-      {panel === 'columns'        && <ColumnsStylePanel      editor={editor} />}
-      {panel === 'sharedInstance' && <SharedBlockInfoPanel   editor={editor} />}
+      {panel === 'global'         && <GlobalStylePanel theme={theme} onChange={onThemeChange} />}
+      {panel === 'text'           && <TextStylePanel block={selectedBlock} onUpdate={updateBlock} />}
+      {panel === 'image'          && <ImageStylePanel block={selectedBlock} onUpdate={updateBlock} />}
+      {panel === 'button'         && <ButtonStylePanel block={selectedBlock} onUpdate={updateBlock} />}
+      {panel === 'divider'        && <DividerStylePanel block={selectedBlock} onUpdate={updateBlock} />}
+      {panel === 'spacer'         && <SpacerStylePanel block={selectedBlock} onUpdate={updateBlock} />}
+      {panel === 'columns'        && <ColumnsStylePanel block={selectedBlock} onUpdate={updateBlock} />}
+      {panel === 'sharedInstance' && <SharedBlockInfoPanel block={selectedBlock} onUpdate={updateBlock} />}
     </div>
   );
 }

@@ -6,15 +6,18 @@ import {
 import { getFontByName, extractFontName, getGoogleFontsUrl } from './fonts.js';
 
 /**
- * Convert a TipTap document JSON + theme into a React Email element tree.
+ * Convert a document (block array or ProseMirror JSON) + theme into a React Email element tree.
  *
- * @param {object} doc          - TipTap document JSON
+ * @param {object|Array} doc    - Block array (new format) or ProseMirror JSON (legacy)
  * @param {object} theme        - template theme object
  * @param {Array}  sharedBlocks - resolved shared blocks array
  * @returns {React.ReactElement} - full React Email tree
  */
 export function buildEmailTree(doc, theme = {}, sharedBlocks = []) {
-  const children = buildNodes(doc?.content, theme, sharedBlocks);
+  // Support both new block array format and legacy ProseMirror JSON
+  const children = Array.isArray(doc)
+    ? buildBlockArray(doc, theme, sharedBlocks)
+    : buildNodes(doc?.content, theme, sharedBlocks);
 
   // ── Font resolution ──────────────────────────────────────────────────────
   // theme.fontName     set by FontPicker (preferred)
@@ -32,9 +35,39 @@ export function buildEmailTree(doc, theme = {}, sharedBlocks = []) {
   // Google Fonts: emit an @import so Gmail webmail + Apple Mail can load it
   const googleFontsUrl = getGoogleFontsUrl(primaryName);
 
+  const maxW = theme.maxWidth || 600;
+
+  // Responsive media queries for mobile email clients
+  const responsiveCss = `
+    @media only screen and (max-width: ${maxW + 40}px) {
+      .email-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+      }
+      .email-columns-row td,
+      .email-columns-row th {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+      .email-columns-row td > div,
+      .email-columns-row th > div {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+      }
+      img {
+        max-width: 100% !important;
+        height: auto !important;
+      }
+    }
+  `;
+
   return (
     <Html>
       <Head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         {/*
           @import must appear as the very first rule in a <style> block.
           Most email clients ignore it, but Gmail (webmail), Apple Mail,
@@ -44,6 +77,7 @@ export function buildEmailTree(doc, theme = {}, sharedBlocks = []) {
         {googleFontsUrl && (
           <style>{`@import url('${googleFontsUrl}');`}</style>
         )}
+        <style>{responsiveCss}</style>
         <Font
           fontFamily={primaryName}
           fallbackFontFamily={fallback}
@@ -51,8 +85,16 @@ export function buildEmailTree(doc, theme = {}, sharedBlocks = []) {
           fontStyle="normal"
         />
       </Head>
-      <Body style={{ backgroundColor: theme.backgroundColor || '#ffffff', margin: 0, padding: 0 }}>
-        <Container style={{ maxWidth: theme.maxWidth || '600px', margin: '0 auto' }}>
+      <Body style={{ backgroundColor: theme.backgroundColor || '#ffffff', margin: 0, padding: '0' }}>
+        <Container
+          className="email-container"
+          style={{
+            maxWidth: `${maxW}px`,
+            width: '100%',
+            margin: '0 auto',
+            padding: '24px 32px',
+          }}
+        >
           {children}
         </Container>
       </Body>
@@ -60,7 +102,80 @@ export function buildEmailTree(doc, theme = {}, sharedBlocks = []) {
   );
 }
 
-// ─── Node builders ─────────────────────────────────────────────────────────
+// ─── New block-array builder ──────────────────────────────────────────────
+
+function buildBlockArray(blocks, theme, sharedBlocks) {
+  if (!blocks?.length) return null;
+  return blocks.map((block, i) => buildBlockItem(block, theme, sharedBlocks, i));
+}
+
+function buildBlockItem(block, theme, sharedBlocks, key) {
+  switch (block.type) {
+    case 'paragraph':
+      return (
+        <Text
+          key={key}
+          style={{
+            textAlign: block.attrs?.textAlign || 'left',
+            fontSize: theme.bodyFontSize ? `${theme.bodyFontSize}px` : '16px',
+            lineHeight: '1.6',
+            margin: '0 0 8px 0',
+          }}
+          dangerouslySetInnerHTML={{ __html: block.html || '' }}
+        />
+      );
+    case 'heading': {
+      const level = block.attrs?.level || 1;
+      const sizes = { 1: '32px', 2: '24px', 3: '20px' };
+      const weights = { 1: 700, 2: 700, 3: 600 };
+      return (
+        <Text
+          key={key}
+          style={{
+            fontSize: sizes[level] || '24px',
+            fontWeight: weights[level] || 700,
+            lineHeight: '1.3',
+            margin: '0 0 12px 0',
+            textAlign: block.attrs?.textAlign || 'left',
+          }}
+          dangerouslySetInnerHTML={{ __html: block.html || '' }}
+        />
+      );
+    }
+    case 'image':   return buildImage({ attrs: block.attrs }, key);
+    case 'button':  return buildButton({ attrs: block.attrs }, key);
+    case 'divider': return buildDivider({ attrs: block.attrs }, key);
+    case 'spacer':  return buildSpacer({ attrs: block.attrs }, key);
+    case 'columns': return buildColumnsFromBlocks(block, theme, sharedBlocks, key);
+    case 'socialIcons': return buildSocialIcons({ attrs: block.attrs }, key);
+    case 'sharedInstance': return buildSharedInstance({ attrs: block.attrs }, theme, sharedBlocks, key);
+    default: return null;
+  }
+}
+
+function buildColumnsFromBlocks(block, theme, sharedBlocks, key) {
+  const { ratio = '50-50' } = block.attrs || {};
+  const ratioMap = {
+    '50-50': ['50%', '50%'],
+    '33-66': ['33%', '66%'],
+    '66-33': ['66%', '33%'],
+    '33-33-33': ['33.333%', '33.333%', '33.333%'],
+  };
+  const widths = ratioMap[ratio] || ['50%', '50%'];
+  const columns = block.columns || [[], []];
+
+  return (
+    <Section key={key} className="email-columns-row">
+      {widths.map((w, i) => (
+        <Column key={i} style={{ width: w, verticalAlign: 'top', padding: '0 8px' }}>
+          {buildBlockArray(columns[i] || [], theme, sharedBlocks)}
+        </Column>
+      ))}
+    </Section>
+  );
+}
+
+// ─── Legacy ProseMirror node builders ─────────────────────────────────────
 
 function buildNodes(nodes, theme, sharedBlocks) {
   if (!nodes || nodes.length === 0) return null;
@@ -71,6 +186,9 @@ function buildNode(node, theme, sharedBlocks, key) {
   switch (node.type) {
     case 'paragraph':        return buildParagraph(node, theme, key);
     case 'heading':          return buildHeading(node, key);
+    case 'bulletList':       return buildBulletList(node, theme, key);
+    case 'orderedList':      return buildBulletList(node, theme, key);
+    case 'listItem':         return buildListItem(node, theme, key);
     case 'blockImage':       return buildImage(node, key);
     case 'blockButton':      return buildButton(node, key);
     case 'blockDivider':     return buildDivider(node, key);
@@ -117,7 +235,7 @@ function buildHeading(node, key) {
 }
 
 function buildImage(node, key) {
-  const { src = '', alt = '', width = '100%', align = 'center', href } = node.attrs || {};
+  const { src = '', alt = '', width = '100%', align = 'center', href, borderRadius = 5 } = node.attrs || {};
   const w = typeof width === 'number' ? `${width}px` : width;
   const marginStyle = align === 'center'
     ? '0 auto'
@@ -129,7 +247,13 @@ function buildImage(node, key) {
       src={src}
       alt={alt}
       width={w}
-      style={{ display: 'block', margin: marginStyle }}
+      style={{
+        display: 'block',
+        margin: marginStyle,
+        maxWidth: '100%',
+        height: 'auto',
+        borderRadius: borderRadius ? `${borderRadius}px` : '0',
+      }}
     />
   );
 
@@ -198,15 +322,21 @@ function buildSpacer(node, key) {
 
 function buildColumns(node, theme, sharedBlocks, key) {
   const { ratio = '50-50' } = node.attrs || {};
-  const ratioMap = { '50-50': ['50%', '50%'], '33-66': ['33%', '66%'], '66-33': ['66%', '33%'] };
-  const [lw, rw]      = ratioMap[ratio] || ['50%', '50%'];
-  const leftChildren  = buildNodes(node.content?.[0]?.content, theme, sharedBlocks);
-  const rightChildren = buildNodes(node.content?.[1]?.content, theme, sharedBlocks);
+  const ratioMap = {
+    '50-50': ['50%', '50%'],
+    '33-66': ['33%', '66%'],
+    '66-33': ['66%', '33%'],
+    '33-33-33': ['33.333%', '33.333%', '33.333%'],
+  };
+  const widths = ratioMap[ratio] || ['50%', '50%'];
 
   return (
-    <Section key={key}>
-      <Column style={{ width: lw, verticalAlign: 'top' }}>{leftChildren}</Column>
-      <Column style={{ width: rw, verticalAlign: 'top' }}>{rightChildren}</Column>
+    <Section key={key} className="email-columns-row">
+      {widths.map((w, i) => (
+        <Column key={i} style={{ width: w, verticalAlign: 'top', padding: '0 8px' }}>
+          {buildNodes(node.content?.[i]?.content, theme, sharedBlocks)}
+        </Column>
+      ))}
     </Section>
   );
 }
@@ -227,6 +357,45 @@ function buildSocialIcons(node, key) {
         </Link>
       ))}
     </Row>
+  );
+}
+
+function buildBulletList(node, theme, key) {
+  // Render a bullet list as a series of indented Text blocks.
+  // Each listItem renders its paragraph children inline with a bullet prefix.
+  const items = (node.content || []).map((item, i) => {
+    const paragraphs = (item.content || []).flatMap(p => {
+      const html = buildInlineHtml(p.content);
+      return html ? [`• ${html}`] : [];
+    });
+    return paragraphs.join('<br />');
+  }).filter(Boolean);
+
+  if (items.length === 0) return null;
+
+  return (
+    <Text
+      key={key}
+      style={{ margin: '0 0 8px 0', paddingLeft: '16px', lineHeight: '1.6', fontSize: '16px' }}
+      dangerouslySetInnerHTML={{ __html: items.join('<br />') }}
+    />
+  );
+}
+
+function buildListItem(node, theme, key) {
+  // Individual listItem — rendered inline inside buildBulletList, but handle
+  // standalone case defensively.
+  const html = (node.content || [])
+    .flatMap(p => (p.content ? [buildInlineHtml(p.content)] : []))
+    .filter(Boolean)
+    .join('<br />');
+
+  return (
+    <Text
+      key={key}
+      style={{ margin: '0 0 4px 0', paddingLeft: '16px', lineHeight: '1.6', fontSize: '16px' }}
+      dangerouslySetInnerHTML={{ __html: `• ${html}` }}
+    />
   );
 }
 

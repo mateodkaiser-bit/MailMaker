@@ -1,4 +1,5 @@
 // Panel shown when a text/heading node is selected
+import { useState, useCallback } from 'react';
 import Icon from '../ui/Icon.jsx';
 
 const sectionTitle = {
@@ -14,19 +15,25 @@ const fieldLabel = {
   letterSpacing: '0.05em', color: 'var(--color-muted)', marginBottom: 8,
 };
 
-export default function TextStylePanel({ editor }) {
-  if (!editor) return null;
+export default function TextStylePanel({ block, onUpdate }) {
+  // Force re-render after execCommand to update format state
+  const [, setTick] = useState(0);
+  const rerender = useCallback(() => setTick(t => t + 1), []);
+
+  if (!block || (block.type !== 'paragraph' && block.type !== 'heading')) return null;
+
+  const attrs = block.attrs || {};
 
   const active = {
-    bold:        editor.isActive('bold'),
-    italic:      editor.isActive('italic'),
-    underline:   editor.isActive('underline'),
-    h1:          editor.isActive('heading', { level: 1 }),
-    h2:          editor.isActive('heading', { level: 2 }),
-    h3:          editor.isActive('heading', { level: 3 }),
-    alignLeft:   editor.isActive({ textAlign: 'left' }),
-    alignCenter: editor.isActive({ textAlign: 'center' }),
-    alignRight:  editor.isActive({ textAlign: 'right' }),
+    bold:        document.queryCommandState('bold'),
+    italic:      document.queryCommandState('italic'),
+    underline:   document.queryCommandState('underline'),
+    h1:          block.type === 'heading' && attrs.level === 1,
+    h2:          block.type === 'heading' && attrs.level === 2,
+    h3:          block.type === 'heading' && attrs.level === 3,
+    alignLeft:   attrs.textAlign === 'left' || !attrs.textAlign,
+    alignCenter: attrs.textAlign === 'center',
+    alignRight:  attrs.textAlign === 'right',
   };
 
   // Sharp toggle button: shell bg when on, transparent when off
@@ -51,12 +58,12 @@ export default function TextStylePanel({ editor }) {
           <div style={fieldLabel}>Level</div>
           <div style={{ display: 'flex', gap: 0 }}>
             {[
-              { label: 'P',  action: () => editor.chain().focus().setParagraph().run(),            on: !active.h1 && !active.h2 && !active.h3 },
-              { label: 'H1', action: () => editor.chain().focus().setHeading({ level: 1 }).run(), on: active.h1 },
-              { label: 'H2', action: () => editor.chain().focus().setHeading({ level: 2 }).run(), on: active.h2 },
-              { label: 'H3', action: () => editor.chain().focus().setHeading({ level: 3 }).run(), on: active.h3 },
+              { label: 'P',  action: () => onUpdate(block.id, { type: 'paragraph', attrs: { ...attrs, level: undefined } }), on: !active.h1 && !active.h2 && !active.h3 },
+              { label: 'H1', action: () => onUpdate(block.id, { type: 'heading', attrs: { ...attrs, level: 1 } }), on: active.h1 },
+              { label: 'H2', action: () => onUpdate(block.id, { type: 'heading', attrs: { ...attrs, level: 2 } }), on: active.h2 },
+              { label: 'H3', action: () => onUpdate(block.id, { type: 'heading', attrs: { ...attrs, level: 3 } }), on: active.h3 },
             ].map(({ label, action, on }, i, arr) => (
-              <button key={label} onClick={action} style={{
+              <button key={label} onMouseDown={(e) => e.preventDefault()} onClick={action} style={{
                 ...btnStyle(on),
                 borderRight: i < arr.length - 1 ? 'none' : '1.5px solid var(--color-surface-mid)',
               }}>{label}</button>
@@ -69,11 +76,11 @@ export default function TextStylePanel({ editor }) {
           <div style={fieldLabel}>Format</div>
           <div style={{ display: 'flex', gap: 0 }}>
             {[
-              { label: 'B', action: () => editor.chain().focus().toggleBold().run(),      on: active.bold,      extra: { fontWeight: 700 } },
-              { label: 'I', action: () => editor.chain().focus().toggleItalic().run(),    on: active.italic,    extra: { fontStyle: 'italic' } },
-              { label: 'U', action: () => editor.chain().focus().toggleUnderline().run(), on: active.underline, extra: { textDecoration: 'underline' } },
+              { label: 'B', action: () => { document.execCommand('bold'); rerender(); },      on: active.bold,      extra: { fontWeight: 700 } },
+              { label: 'I', action: () => { document.execCommand('italic'); rerender(); },    on: active.italic,    extra: { fontStyle: 'italic' } },
+              { label: 'U', action: () => { document.execCommand('underline'); rerender(); }, on: active.underline, extra: { textDecoration: 'underline' } },
             ].map(({ label, action, on, extra }, i, arr) => (
-              <button key={label} onClick={action} style={{
+              <button key={label} onMouseDown={(e) => e.preventDefault()} onClick={action} style={{
                 ...btnStyle(on), ...extra,
                 borderRight: i < arr.length - 1 ? 'none' : '1.5px solid var(--color-surface-mid)',
               }}>{label}</button>
@@ -92,7 +99,8 @@ export default function TextStylePanel({ editor }) {
             ].map(({ icon, value, title, on }, i, arr) => (
               <button
                 key={value}
-                onClick={() => editor.chain().focus().setTextAlign(value).run()}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => onUpdate(block.id, { attrs: { ...block.attrs, textAlign: value } })}
                 title={title}
                 style={{
                   ...btnStyle(on),
@@ -110,7 +118,8 @@ export default function TextStylePanel({ editor }) {
           <div style={fieldLabel}>Text color</div>
           <input
             type="color"
-            onChange={e => editor.chain().focus().setColor(e.target.value).run()}
+            onMouseDown={(e) => e.preventDefault()}
+            onChange={e => { document.execCommand('foreColor', false, e.target.value); rerender(); }}
             style={{ width: 36, height: 28, border: '1.5px solid var(--color-surface-mid)', borderRadius: 0, cursor: 'pointer' }}
           />
         </div>

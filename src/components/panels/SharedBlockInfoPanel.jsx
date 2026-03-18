@@ -5,25 +5,24 @@ import { detachSharedBlock } from '../../lib/detachSharedBlock.js';
 import { useToast } from '../ui/Toast.jsx';
 import Icon from '../ui/Icon.jsx';
 
-export default function SharedBlockInfoPanel({ editor }) {
+export default function SharedBlockInfoPanel({ block, onUpdate }) {
   const navigate = useNavigate();
   const { getBlock, blocks } = useSharedBlockStore();
   const { toast } = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  if (!editor) return null;
-  if (!editor.isActive('sharedInstance')) return null;
+  if (!block || block.type !== 'sharedInstance') return null;
 
-  const attrs = editor.getAttributes('sharedInstance');
-  const block = getBlock(attrs.sharedBlockId);
+  const attrs = block.attrs;
+  const sharedBlock = getBlock(attrs.sharedBlockId);
   const hasSnapshot = !!attrs.snapshot;
-  const canDetach = !!(block || hasSnapshot);
+  const canDetach = !!(sharedBlock || hasSnapshot);
 
   function handleDetachClick() { setConfirmOpen(true); }
 
   function handleConfirm() {
     setConfirmOpen(false);
-    const ok = detachSharedBlock(editor, blocks);
+    const ok = detachSharedBlock(block, onUpdate, blocks);
     if (ok) toast('Block detached — content is now editable', 'success');
     else    toast('Could not detach block', 'danger');
   }
@@ -44,11 +43,11 @@ export default function SharedBlockInfoPanel({ editor }) {
           padding: '12px 14px',
         }}>
           <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)', color: 'var(--color-ink)' }}>
-            {block?.name ?? attrs.label ?? 'Shared Block'}
+            {sharedBlock?.name ?? attrs.label ?? 'Shared Block'}
           </div>
         </div>
 
-        {!block && (
+        {!sharedBlock && (
           <div style={{
             background: 'var(--color-danger-bg)', color: 'var(--color-danger)',
             borderRadius: 'var(--radius-md)', padding: '10px 12px', fontSize: 'var(--text-xs)',
@@ -118,7 +117,7 @@ export default function SharedBlockInfoPanel({ editor }) {
               Detach shared block?
             </h3>
             <p style={{ margin: 0, fontSize: 'var(--text-sm)', color: 'var(--color-slate)', lineHeight: 1.5 }}>
-              {block
+              {sharedBlock
                 ? 'This will replace the shared block reference with an editable copy of its current content. Future changes to the original block will no longer affect this template.'
                 : 'The original shared block has been deleted. This will replace the reference with an editable copy of the saved snapshot.'}
             </p>
